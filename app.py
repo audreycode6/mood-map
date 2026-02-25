@@ -19,5 +19,25 @@ def load_db():
     g.storage = DatabasePersistence()
 
 
+@app.route("/register")
+def display_register():
+    return render_template("register.html")
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    pass  # TODO
+
+
+@app.route("/login")
+def display_login():
+    return render_template("login.html")
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    pass  # TODO
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5003)
