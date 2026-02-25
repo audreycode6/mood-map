@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <title>Mood Map</title>
+    <meta charset="UTF-8/" />
+    <link
+      rel="stylesheet"
+      href='{{ url_for("static", filename="application.css") }}'
+    />
+  </head>
+  <body>
+    <main>
+      {% block content %}
+      <!-- Filled in by the `content` block from another template file -->
+      {% endblock %}
+    </main>
+  </body>
+</html>

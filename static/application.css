@@ -1,0 +1,17 @@
+body {
+  font-family: sans-serif;
+  padding: 1em;
+}
+
+.message {
+  background-color: rgb(255, 255, 128);
+  padding: 10px;
+}
+
+.delete_button:hover {
+  background-color: rgb(237, 122, 122);
+}
+
+.submit_button:hover {
+  background-color: rgb(142, 237, 142);
+}
