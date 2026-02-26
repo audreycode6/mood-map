@@ -8,7 +8,7 @@ from flask import (
     url_for,
 )
 
-from bcrypt import hashpw, gensalt
+from bcrypt import hashpw, gensalt, checkpw
 
 from database_persistence import DatabasePersistence
 
@@ -29,26 +29,31 @@ def display_register():
 @app.route("/register", methods=["POST"])
 def register():
     username = request.form.get("username").strip().lower()
-    password = request.form.get("password").strip().lower()
+    password = request.form.get("password").strip()
 
     # TODO check both fields filled out\ (helper func)
     # TODO check if username is unique
     print(f"TEST username and pw: {username} {password}")
 
-    if username is not None and password is not None:
-        is_valid = g.storage.is_unique_user(username)
-        if is_valid:
-            print(f"flash success: {is_valid}")
-            # TODO add user to db
+    if username and password:
+        if not g.storage.user_exists(username):
             hashed_pw = hashpw(password.encode("utf-8"), gensalt())
-            print(f"pw: {password} -> hash : {hashed_pw}")
-            return render_template("login.html")
+            # convert to str
+            hashed_pw_str = hashed_pw.decode("utf-8")
 
-            # success redirect to login with flash message and create new user in db
+            # create user
+            g.storage.register_new_user(username, hashed_pw_str)
+            # TODO add flash
+            print("==> flash Success: user is registered ")
+            return render_template("login.html"), 200
+        else:
+            error = f"user {username} already exists"
+    else:
+        error = "missing input!"
 
     # error redirect to same page with user filled out with flash message
 
-    print("flash error: Invalid credentials, please try again")
+    print(f"==> flash error: {error}, please try again")
     return render_template("register.html", username=username), 422
 
 
@@ -63,11 +68,25 @@ def login():
     password = request.form.get("password").strip()
 
     # check valid input
-    # TODO check username and pw to db
-    # success redirect to index with login view
+    if username and password:
+        result = g.storage.is_valid_user(username, password)
+        if result:
+            hashed_pw = result[2].encode("utf-8")
+            b_pw = password.encode("utf-8")
+            if checkpw(b_pw, hashed_pw):
+                print("==> FLash: Success user authenticated")
+
+                # success redirect to index with login view
+                return render_template("view_entries.html")
+
     # error redirect to same page with flash message
-    print(f"TEST username and pw: {username} {password}")
+    print(f"==> flash ERror: Invalid credentials, please try again")
     return render_template("login.html")
+
+
+@app.route("/view_entries")
+def view_entries():
+    return render_template("view_entries.html")
 
 
 if __name__ == "__main__":
