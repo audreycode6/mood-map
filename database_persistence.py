@@ -27,6 +27,24 @@ class DatabasePersistence:
         finally:
             connection.close()
 
+    def is_unique_user(self, username):
+        query = "SELECT * FROM users WHERE username = %s"
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (username,))
+                result = cursor.fetchone()
+                print(f"TEST: result {result}")  # TODO remove/ add logs
+                if result:
+                    return False
+                return True
+
+    def register_new_user(self, username, password):
+        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s)"
+        # TODO need to hash pw
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (username, password))
+
     def _setup_schema(self):
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
