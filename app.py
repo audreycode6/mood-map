@@ -121,12 +121,14 @@ def logout():
 @app.route("/view_entries")
 @require_login
 def view_entries():
+    # TODO
     return render_template("view_entries.html")
 
 
 @app.route("/create_entry")
 @require_login
 def display_create_entry():
+    # TODO
     return render_template("create_entry.html")
 
 
@@ -135,6 +137,33 @@ def display_create_entry():
 def create_entry():
     # TODO
     return render_template("create_entry.html")
+
+
+@app.route("/view_entry/<int:entry_id>")
+@require_login
+def display_entry():  # TODO
+    return render_template("view_entry.html")
+
+
+@app.route("/edit_entry/<int:entry_id>")
+@require_login
+def display_edit_entry():
+    # TODO
+    return render_template("edit_entry.html")
+
+
+@app.route("/edit_entry/<int:entry_id>", methods=["POSTS"])
+@require_login
+def edit_entry():
+    # TODO
+    return render_template("view_entry.html")
+
+
+@app.route("/delete_entry/<int:entry_id>", methods=["POSTS"])
+@require_login
+def delete_entry():
+    # TODO
+    return render_template("view_entry.html")
 
 
 if __name__ == "__main__":
