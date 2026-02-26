@@ -15,3 +15,8 @@ body {
 .submit_button:hover {
   background-color: rgb(142, 237, 142);
 }
+
+#signed_in_text {
+  font-size: 0.9em;
+  color: gray;
+}
