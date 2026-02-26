@@ -5,17 +5,10 @@ import os
 import psycopg2
 from psycopg2.extras import DictCursor
 
-LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-logger = logging.getLogger(__name__)
-
 
 class DatabasePersistence:
     def __init__(self):
         self._setup_schema()
-        print(
-            "==> Set up schema"
-        )  # TODO remove and add logs maybe for if table gets created
 
     @contextmanager
     def _database_connect(self):
@@ -33,17 +26,23 @@ class DatabasePersistence:
             with conn.cursor() as cursor:
                 cursor.execute(query, (username,))
                 result = cursor.fetchone()
-                print(f"TEST: result {result}")  # TODO remove/ add logs
                 if result:
                     return False
                 return True
 
-    def register_new_user(self, username, password):
+    def register_new_user(self, username, hashed_password):
         query = "INSERT INTO users (username, password_hash) VALUES (%s, %s)"
-        # TODO need to hash pw
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (username, password))
+                cursor.execute(query, (username, hashed_password))
+
+    def user_exists(self, username):
+        query = "SELECT * FROM users WHERE username = %s"
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (username,))
+                result = cursor.fetchone()
+                return result
 
     def _setup_schema(self):
         with self._database_connect() as conn:
