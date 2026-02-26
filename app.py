@@ -31,27 +31,23 @@ def register():
     username = request.form.get("username").strip().lower()
     password = request.form.get("password").strip()
 
-    # TODO check both fields filled out\ (helper func)
-    # TODO check if username is unique
-    print(f"TEST username and pw: {username} {password}")
-
     if username and password:
         if not g.storage.user_exists(username):
             hashed_pw = hashpw(password.encode("utf-8"), gensalt())
-            # convert to str
+            # convert to str before storing in db
             hashed_pw_str = hashed_pw.decode("utf-8")
 
             # create user
             g.storage.register_new_user(username, hashed_pw_str)
             # TODO add flash
             print("==> flash Success: user is registered ")
-            return render_template("login.html"), 200
+            return render_template("login.html")
+
         else:
             error = f"user {username} already exists"
-    else:
-        error = "missing input!"
 
-    # error redirect to same page with user filled out with flash message
+    else:
+        error = "missing input"
 
     print(f"==> flash error: {error}, please try again")
     return render_template("register.html", username=username), 422
@@ -64,12 +60,12 @@ def display_login():
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.form.get("username").strip()
+    username = request.form.get("username").strip().lower()
     password = request.form.get("password").strip()
 
-    # check valid input
+    # validate input
     if username and password:
-        result = g.storage.is_valid_user(username, password)
+        result = g.storage.user_exists(username)
         if result:
             hashed_pw = result[2].encode("utf-8")
             b_pw = password.encode("utf-8")
@@ -81,7 +77,7 @@ def login():
 
     # error redirect to same page with flash message
     print(f"==> flash ERror: Invalid credentials, please try again")
-    return render_template("login.html")
+    return render_template("login.html"), 404
 
 
 @app.route("/view_entries")
