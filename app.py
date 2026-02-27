@@ -147,7 +147,6 @@ def validate_entry(entry_date, energy_level, mood_range):
 @app.route("/create_entry", methods=["POST"])
 @require_login
 def create_entry():
-    # TODO validate input
     # TODO maybe add a valid_request_body_keys_exist like budget.py
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
@@ -161,9 +160,7 @@ def create_entry():
             user_id, entry_date, energy_level, mood_range, reflection
         )
         print(f"SUCCESS: entry_id = {entry_id[0]}")
-        return redirect(
-            url_for("view_entries")
-        )  # TODO redirect(f"/view_entry/{entry_id}")
+        return redirect(f"/view_entry/{entry_id[0]}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
         return (
@@ -188,8 +185,18 @@ def create_entry():
 
 @app.route("/view_entry/<int:entry_id>")
 @require_login
-def display_entry():  # TODO
-    return render_template("view_entry.html")
+def display_entry(entry_id):  # TODO
+    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+        entry_id
+    )
+    print(f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}")
+    return render_template(
+        "view_entry.html",
+        date=date,
+        energy_level=energy_level,
+        mood_range=mood_range,
+        reflection=reflection,
+    )
 
 
 @app.route("/edit_entry/<int:entry_id>")
