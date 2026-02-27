@@ -133,12 +133,11 @@ def display_create_entry():
 
 
 def validate_entry(entry_date, energy_level, mood_range):
-    if g.storage.check_unique_date(
-        session["user_id"], entry_date
-    ):  # check that entry date for that user doesnt already exists
-        raise ValueError(f"You already have an entry for this date: {entry_date}.")
     if not entry_date:
         raise ValueError("Missing a date")
+    if g.storage.check_unique_date(session["user_id"], entry_date):
+        # check that entry date for that user doesnt already exists
+        raise ValueError(f"You already have an entry for this date: {entry_date}.")
     if not energy_level:
         raise ValueError("Missing a value for energy level")
     if not mood_range:
@@ -167,7 +166,16 @@ def create_entry():
         )  # TODO redirect(f"/view_entry/{entry_id}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
-        return render_template("create_entry.html"), 404
+        return (
+            render_template(
+                "create_entry.html",
+                entry_date=entry_date,
+                energy_level=energy_level,
+                mood_range=mood_range,
+                reflection=reflection,
+            ),
+            404,
+        )
     except Exception as e:
         print(f"flash ERROR: {e}")
 
