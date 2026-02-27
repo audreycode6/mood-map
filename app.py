@@ -27,7 +27,6 @@ def require_login(func):
     @wraps(func)
     def decorated_func(*args, **kwargs):
         if not is_logged_in():
-            # print(f"TESTing: func: {request.path}")
             session["protected_page_path"] = request.path
             flash("You must be logged in to do that.")
             return redirect(
@@ -95,10 +94,12 @@ def login():
             if checkpw(b_pw, hashed_pw):
                 # store username in session to track logged in user
                 session["username"] = username
+                session["user_id"] = result[0]
                 print("==> FLash: Success user authenticated")
 
                 # if proceeding from login redirect go back to original path
-                if session["protected_page_path"]:
+                protected_page = session.pop("protected_page_path", None)
+                if protected_page:
                     print(f"TEST: {session['protected_page_path']}")
                     return redirect(session["protected_page_path"])
 
@@ -128,14 +129,52 @@ def view_entries():
 @app.route("/create_entry")
 @require_login
 def display_create_entry():
-    # TODO
     return render_template("create_entry.html")
 
 
-@app.route("/create_entry", methods=["POSTS"])
+def validate_entry(entry_date, energy_level, mood_range):
+    if g.storage.check_unique_date(
+        session["user_id"], entry_date
+    ):  # check that entry date for that user doesnt already exists
+        raise ValueError(f"You already have an entry for this date: {entry_date}.")
+    if not entry_date:
+        raise ValueError("Missing a date")
+    if not energy_level:
+        raise ValueError("Missing a value for energy level")
+    if not mood_range:
+        raise ValueError("Missing a value for mood range")
+
+
+@app.route("/create_entry", methods=["POST"])
 @require_login
 def create_entry():
-    # TODO
+    # TODO validate input
+    # TODO maybe add a valid_request_body_keys_exist like budget.py
+    entry_date = request.form.get("entry_date")
+    energy_level = request.form.get("energy_level")
+    mood_range = request.form.get("mood_range")
+    reflection = request.form.get("reflection")
+
+    user_id = session["user_id"]
+    try:
+        validate_entry(entry_date, energy_level, mood_range)
+        entry_id = g.storage.create_new_entry(
+            user_id, entry_date, energy_level, mood_range, reflection
+        )
+        print(f"SUCCESS: entry_id = {entry_id[0]}")
+        return redirect(
+            url_for("view_entries")
+        )  # TODO redirect(f"/view_entry/{entry_id}")
+    except ValueError as e:
+        print(f"flash ERROR: {e}")
+        return render_template("create_entry.html"), 404
+    except Exception as e:
+        print(f"flash ERROR: {e}")
+
+    # redirect to display view
+
+    # TODO if invalid input redirect to same page with flash message for each error
+    # TODO intepolate valid entries so they dont have to rewrite
     return render_template("create_entry.html")
 
 

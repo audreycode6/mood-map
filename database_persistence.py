@@ -37,6 +37,55 @@ class DatabasePersistence:
             with conn.cursor() as cursor:
                 cursor.execute(query, (username, hashed_password))
 
+    def check_unique_date(self, user_id, entry_date):
+        query = "SELECT * FROM entries WHERE user_id = %s and entry_date = %s"
+        print(
+            f"==> LOG: Executing query {query}, with user_id: {user_id} and entry_date {entry_date}"
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    query,
+                    (
+                        user_id,
+                        entry_date,
+                    ),
+                )
+                return cursor.fetchone()
+
+    def create_new_entry(
+        self, user_id, entry_date, energy_level, mood_range, reflection
+    ):
+        query = """
+        INSERT INTO entries 
+        (user_id, entry_date, energy_level, mood_range, reflection)
+        VALUES
+        (%s, %s, %s, %s, %s)"""
+        query_2 = "SELECT id FROM entries WHERE entry_date = %s"
+
+        print(
+            f"""
+            ==> LOG: Executing query {query}, with user_id: {user_id},
+            entry_date: {entry_date}, energy_level: {energy_level},
+            mood_range: {mood_range}, and reflection: {reflection}
+            """
+        )
+        print(f"""==> LOG: Executing query {query_2}, with entry_date: {entry_date}""")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    query,
+                    (
+                        user_id,
+                        entry_date,
+                        energy_level,
+                        mood_range,
+                        reflection,
+                    ),
+                )
+                cursor.execute(query_2, (entry_date,))
+                return cursor.fetchone()
+
     def _setup_schema(self):
         with self._database_connect() as conn:
             with conn.cursor() as cursor:

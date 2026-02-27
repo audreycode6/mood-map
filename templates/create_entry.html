@@ -1,3 +1,58 @@
 {% extends 'layout.html' %} {% block content%}
 <h1>Create an Entry</h1>
+<form method="post" action='{{ url_for("create_entry") }}'>
+  <div>
+    <label for="entry_date"
+      >Date:
+      <input id="entry_date" name="entry_date" type="date" />
+    </label>
+  </div>
+  <br />
+  <div>
+    <label for="energy_level"
+      >Energy:
+      <select id="energy_level" name="energy_level">
+        <option value="">How's your energy today?</option>
+        <option value="1">1 - Very low energy</option>
+        <option value="2">2 - Low energy</option>
+        <option value="3">3 - Neutral</option>
+        <option value="4">4 - High energy</option>
+        <option value="5">5 - Very high energy</option>
+      </select>
+      <br />
+    </label>
+  </div>
+  <br />
+  <div>
+    <label for="mood_range"
+      >Mood:
+      <select id="mood_range" name="mood_range">
+        <option value="">How are you feeling today?</option>
+        <option value="1">1 - Very negative</option>
+        <option value="2">2 - Negative</option>
+        <option value="3">3 - Calm</option>
+        <option value="4">4 - Positive</option>
+        <option value="5">5 - Very positive</option>
+      </select>
+      <br />
+    </label>
+  </div>
+  <br />
+  <div>
+    <label for="reflection"
+      >Reflection:
+      <br />
+      <textarea
+        id="reflection"
+        name="reflection"
+        placeholder="Notes on your day ..."
+      ></textarea>
+    </label>
+  </div>
+  <br />
+  <div>
+    <button class="submit_button" type="submit">Create Entry</button>
+    <a href="/view_entries">Cancel</a>
+  </div>
+</form>
 {% endblock %}
