@@ -7,8 +7,8 @@ CREATE TABLE entries (
 id serial PRIMARY KEY,
 user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 entry_date DATE NOT NULL DEFAULT CURRENT_DATE, 
-energy_level int NOT NULL CHECK (energy_level BETWEEN 1 AND 5),
-mood_range int NOT NULL CHECK (mood_range BETWEEN 1 AND 5),
+energy_level text NOT NULL,
+mood_range text NOT NULL,
 reflection text,
 UNIQUE (user_id, entry_date)
 );

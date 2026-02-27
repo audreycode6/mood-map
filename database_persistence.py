@@ -86,6 +86,14 @@ class DatabasePersistence:
                 cursor.execute(query_2, (entry_date,))
                 return cursor.fetchone()
 
+    def get_entry(self, entry_id):
+        query = "SELECT * FROM entries WHERE id = %s"
+        print(f"""==> LOG: Executing query {query}, with entry_id: {entry_id}""")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (entry_id,))
+                return cursor.fetchone()
+
     def _setup_schema(self):
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -122,8 +130,8 @@ class DatabasePersistence:
                         id serial PRIMARY KEY,
                         user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
                         entry_date DATE NOT NULL DEFAULT CURRENT_DATE, 
-                        energy_level int NOT NULL CHECK (energy_level BETWEEN 1 AND 5),
-                        mood_range int NOT NULL CHECK (mood_range BETWEEN 1 AND 5),
+                        energy_level text NOT NULL,
+                        mood_range text NOT NULL,
                         reflection text,
                         UNIQUE (user_id, entry_date)
                     );
