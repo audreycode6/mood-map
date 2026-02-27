@@ -94,6 +94,10 @@ class DatabasePersistence:
                 cursor.execute(query, (entry_id,))
                 return cursor.fetchone()
 
+    def edit_entry(self, entry_id):
+        query = ""
+        pass  # TODO
+
     def _setup_schema(self):
         with self._database_connect() as conn:
             with conn.cursor() as cursor:

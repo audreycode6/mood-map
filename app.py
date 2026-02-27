@@ -190,8 +190,10 @@ def display_entry(entry_id):  # TODO
         entry_id
     )
     print(f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}")
+    # TODO retrieve emotions
     return render_template(
         "view_entry.html",
+        entry_id=id,
         date=date,
         energy_level=energy_level,
         mood_range=mood_range,
@@ -201,19 +203,35 @@ def display_entry(entry_id):  # TODO
 
 @app.route("/edit_entry/<int:entry_id>")
 @require_login
-def display_edit_entry():
-    # TODO
-    return render_template("edit_entry.html")
+def display_edit_entry(entry_id):
+    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+        entry_id
+    )
+    return render_template(
+        "edit_entry.html",
+        entry_id=entry_id,
+        entry_date=date,
+        energy_level=energy_level,
+        mood_range=mood_range,
+        reflection=reflection,
+    )
 
 
-@app.route("/edit_entry/<int:entry_id>", methods=["POSTS"])
+@app.route("/edit_entry/<int:entry_id>", methods=["POST"])
 @require_login
-def edit_entry():
+def edit_entry(entry_id):
     # TODO
-    return render_template("view_entry.html")
+    # validate input ()
+    # get dict of all attributes to change (k:attribute to change | v: new_attribute)
+    #
+    entry_date = request.form.get("entry_date")
+    energy_level = request.form.get("energy_level")
+    mood_range = request.form.get("mood_range")
+    reflection = request.form.get("reflection")
+    return render_template("view_entry.html", entry_id=entry_id)
 
 
-@app.route("/delete_entry/<int:entry_id>", methods=["POSTS"])
+@app.route("/delete_entry/<int:entry_id>", methods=["POST"])
 @require_login
 def delete_entry():
     # TODO
