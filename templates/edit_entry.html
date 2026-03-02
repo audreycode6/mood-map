@@ -1,0 +1,89 @@
+{% extends 'layout.html' %} {% block content%}
+<h1>Edit an Entry</h1>
+<form method="post" action='/edit_entry/{{entry_id}}'> 
+{# todo idk if this action path is wporkijgn #}
+  <div>
+    <label for="entry_date"
+      >Date:
+      <input
+        id="entry_date"
+        name="entry_date"
+        type="date"
+        value="{{ entry_date }}"
+      />
+    </label>
+  </div>
+  <br />
+  <div>
+    <label for="energy_level"
+      >Energy:
+      <select id="energy_level" name="energy_level">
+        <option value="">How's your energy today?</option>
+        <option value="Very high energy" {% if energy_level=="Very high energy" %}selected{% endif %}>
+          Very high energy
+        </option>
+        <option value="High energy" {% if energy_level=="High energy" %}selected{% endif %}>
+          High energy
+        </option>
+        <option value="Neutral" {% if energy_level=="Neutral" %}selected{% endif %}>
+          Neutral
+        </option>
+        <option value="Low energy" {% if energy_level=="Low energy" %}selected{% endif %}>
+          Low energy
+        </option>
+        <option value="Very low energy" {% if energy_level=="Very low energy" %}selected{% endif %}>
+          Very low energy
+        </option>
+      </select>
+      <br />
+    </label>
+  </div>
+  <br />
+  <div>
+    <label for="mood_range"
+      >Mood:
+      <select id="mood_range" name="mood_range">
+        <option value="">How are you feeling today?</option>
+        <option value="Very positive" {% if mood_range=="Very positive" %}selected{% endif %}>
+          Very positive
+        </option>
+        <option value="Positive" {% if mood_range=="Positive" %}selected{% endif %}>
+          Positive
+        </option>
+        <option value="Calm" {% if mood_range=="Calm" %}selected{% endif %}>
+          Calm
+        </option>
+        <option value="Negative" {% if mood_range=="Negative" %}selected{% endif %}>
+          Negative
+        </option>
+        <option value="Very negative" {% if mood_range=="Very negative" %}selected{% endif %}>
+          Very negative
+        </option>
+      </select>
+      <br />
+    </label>
+  </div>
+  <br />
+  <div>
+    <label for="reflection"
+      >Reflection:
+      <br />
+      <textarea
+        id="reflection"
+        name="reflection"
+        placeholder="Notes on your day ..."
+      >{{ reflection or '' }}</textarea>
+    </label>
+  </div>
+  <br />
+  <div>
+    <button class="submit_button" type="submit">Edit Entry</button>
+    <a href="/view_entry/{{entry_id}}">Cancel</a>
+  </div>
+</form>
+<br>
+<form action="{{ url_for('delete_entry', entry_id=entry_id) }}" 
+                method="post" class='delete_data'>
+            <button type="submit" class="delete_button">Delete Entry</button>
+          </form>
+{% endblock %}
