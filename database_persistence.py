@@ -94,9 +94,44 @@ class DatabasePersistence:
                 cursor.execute(query, (entry_id,))
                 return cursor.fetchone()
 
-    def edit_entry(self, entry_id):
-        query = ""
-        pass  # TODO
+    def get_entry_date(self, entry_id):
+        query = "SELECT entry_date FROM entries WHERE id = %s"
+        print(f"""==> LOG: Executing query {query}, with entry_id: {entry_id}""")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (entry_id,))
+                return cursor.fetchone()
+
+    def update_entry(self, entry_id, entry_date, energy_level, mood_range, reflection):
+
+        query = """UPDATE entries 
+        SET 
+        entry_date = %s, 
+        energy_level = %s, 
+        mood_range = %s,
+        reflection = %s
+        WHERE id = %s"""
+        print(
+            f"""==> LOG: Executing query {query}, 
+              with entry_date: {entry_date}, 
+              energy_level: {energy_level},
+              mood_range: {mood_range}, 
+              reflection: {reflection},
+              entry_id: {entry_id}"""
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    query,
+                    (entry_date, energy_level, mood_range, reflection, entry_id),
+                )
+
+    def delete_entry(self, entry_id):
+        query = "DELETE FROM entries WHERE id = %s"
+        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (entry_id,))
 
     def _setup_schema(self):
         with self._database_connect() as conn:

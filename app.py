@@ -135,8 +135,10 @@ def display_create_entry():
 def validate_entry(entry_date, energy_level, mood_range):
     if not entry_date:
         raise ValueError("Missing a date")
-    if g.storage.check_unique_date(session["user_id"], entry_date):
-        # check that entry date for that user doesnt already exists
+    # check that entry date for that user doesnt already exists
+    if g.storage.check_unique_date(
+        session["user_id"], entry_date
+    ):  # TODO when in edit mode do not care if it is same date
         raise ValueError(f"You already have an entry for this date: {entry_date}.")
     if not energy_level:
         raise ValueError("Missing a value for energy level")
@@ -217,25 +219,62 @@ def display_edit_entry(entry_id):
     )
 
 
+def validate_edited_entry(entry_id, entry_date, energy_level, mood_range):
+    if not entry_date:
+        raise ValueError("Missing a date")
+    entry_date_is_same = g.storage.get_entry_date(entry_id)[0]
+    if str(entry_date_is_same) != entry_date:  # if not current entry_date value
+        # check that entry date for that user doesnt already exists
+        if g.storage.check_unique_date(session["user_id"], entry_date):
+            raise ValueError(f"You already have an entry for this date: {entry_date}.")
+    if not energy_level:
+        raise ValueError("Missing a value for energy level")
+    if not mood_range:
+        raise ValueError("Missing a value for mood range")
+
+
 @app.route("/edit_entry/<int:entry_id>", methods=["POST"])
 @require_login
 def edit_entry(entry_id):
-    # TODO
-    # validate input ()
-    # get dict of all attributes to change (k:attribute to change | v: new_attribute)
-    #
+    # TODO prob can make the validation more generalized and reusable
+    # currently takes all info and updates it all, rather than individual value that is diff
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
     mood_range = request.form.get("mood_range")
     reflection = request.form.get("reflection")
+
+    try:
+        validate_edited_entry(entry_id, entry_date, energy_level, mood_range)
+        g.storage.update_entry(
+            entry_id, entry_date, energy_level, mood_range, reflection
+        )
+        print("SUCCESS ..?")
+        return redirect(f"/view_entry/{entry_id}")
+    except ValueError as e:
+        print(f"flash ERROR: {e}")
+        return (
+            render_template(
+                "edit_entry.html",
+                entry_id=entry_id,
+                entry_date=entry_date,
+                energy_level=energy_level,
+                mood_range=mood_range,
+                reflection=reflection,
+            ),
+            404,
+        )
+    except Exception as e:
+        print(f"flash ERROR: {e}")
+
     return render_template("view_entry.html", entry_id=entry_id)
 
 
 @app.route("/delete_entry/<int:entry_id>", methods=["POST"])
 @require_login
-def delete_entry():
-    # TODO
-    return render_template("view_entry.html")
+def delete_entry(entry_id):
+    g.storage.delete_entry(entry_id)
+    print("Successfully deleted entry...")
+    return render_template("view_entries.html")
 
 
 if __name__ == "__main__":
