@@ -4,7 +4,12 @@
   <div>
     <label for="entry_date"
       >Date:
-      <input id="entry_date" name="entry_date" type="date" />
+      <input
+        id="entry_date"
+        name="entry_date"
+        type="date"
+        value="{{ entry_date or '' }}"
+      />
     </label>
   </div>
   <br />
@@ -13,11 +18,21 @@
       >Energy:
       <select id="energy_level" name="energy_level">
         <option value="">How's your energy today?</option>
-        <option value="1">1 - Very low energy</option>
-        <option value="2">2 - Low energy</option>
-        <option value="3">3 - Neutral</option>
-        <option value="4">4 - High energy</option>
-        <option value="5">5 - Very high energy</option>
+        <option value="Very high energy" {% if energy_level=="Very high energy" %}selected{% endif %}>
+          Very high energy
+        </option>
+        <option value="High energy" {% if energy_level=="High energy" %}selected{% endif %}>
+          High energy
+        </option>
+        <option value="Neutral" {% if energy_level=="Neutral" %}selected{% endif %}>
+          Neutral
+        </option>
+        <option value="Low energy" {% if energy_level=="Low energy" %}selected{% endif %}>
+          Low energy
+        </option>
+        <option value="Very low energy" {% if energy_level=="Very low energy" %}selected{% endif %}>
+          Very low energy
+        </option>
       </select>
       <br />
     </label>
@@ -28,11 +43,21 @@
       >Mood:
       <select id="mood_range" name="mood_range">
         <option value="">How are you feeling today?</option>
-        <option value="1">1 - Very negative</option>
-        <option value="2">2 - Negative</option>
-        <option value="3">3 - Calm</option>
-        <option value="4">4 - Positive</option>
-        <option value="5">5 - Very positive</option>
+        <option value="Very positive" {% if mood_range=="Very positive" %}selected{% endif %}>
+          Very positive
+        </option>
+        <option value="Positive" {% if mood_range=="Positive" %}selected{% endif %}>
+          Positive
+        </option>
+        <option value="Calm" {% if mood_range=="Calm" %}selected{% endif %}>
+          Calm
+        </option>
+        <option value="Negative" {% if mood_range=="Negative" %}selected{% endif %}>
+          Negative
+        </option>
+        <option value="Very negative" {% if mood_range=="Very negative" %}selected{% endif %}>
+          Very negative
+        </option>
       </select>
       <br />
     </label>
@@ -46,7 +71,7 @@
         id="reflection"
         name="reflection"
         placeholder="Notes on your day ..."
-      ></textarea>
+      >{{ reflection or '' }}</textarea>
     </label>
   </div>
   <br />
