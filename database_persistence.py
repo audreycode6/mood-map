@@ -20,6 +20,12 @@ class DatabasePersistence:
         finally:
             connection.close()
 
+    """
+    ----------------
+    USERS QUERies:
+    ----------------
+    """
+
     def user_exists(self, username):
         query = "SELECT * FROM users WHERE username = %s"
         print(f"==> LOG: Executing query {query}, with username: {username}")
@@ -36,6 +42,12 @@ class DatabasePersistence:
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (username, hashed_password))
+
+    """
+    ----------------
+    ENTRIES QUERies:
+    ----------------
+    """
 
     def check_unique_date(self, user_id, entry_date):
         query = "SELECT * FROM entries WHERE user_id = %s and entry_date = %s"
@@ -132,6 +144,58 @@ class DatabasePersistence:
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (entry_id,))
+
+    """
+    ----------------
+    EMOTION QUERies:
+    ----------------
+    """
+
+    def add_emotions(self, entry_id, emotions):
+        query = """INSERT INTO emotions (entry_id, emotion)
+        VALUES (%s, %s)"""
+        print(
+            f"==> LOG: Executing query {query}, with entry_id: {entry_id} and emotion: {emotion}"
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                for emotion in emotions:
+                    cursor.execute(
+                        query,
+                        (
+                            entry_id,
+                            emotion,
+                        ),
+                    )
+
+    def get_entry_emotions(self, entry_id):
+        query = "SELECT emotion FROM emotions WHERE entry_id = %s"
+        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (entry_id,))
+
+    def edit_emotion(self, emotion, emotion_id):
+        query = "UPDATE emotions SET emotion = %s WHERE id = %s"
+        print(
+            f"==> LOG: Executing query {query}, with emotion: {emotion} and emotion_id = {emotion_id}"
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (emotion, emotion_id))
+
+    def delete_emotion(self, emotion_id):
+        query = "DELETE FROM emotions WHERE id = %s"
+        print(f"==> LOG: Executing query {query}, with entry_id: {emotion_id}")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (emotion_id,))
+
+    """
+    ----------------
+    Set Up Schema:
+    ----------------
+    """
 
     def _setup_schema(self):
         with self._database_connect() as conn:

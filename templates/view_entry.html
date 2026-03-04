@@ -1,3 +1,14 @@
 {% extends 'layout.html' %} {% block content%}
-<h1>TODO</h1>
+<h1>Entry from {{date}}</h1>
+<div>
+<p>Energy: {{energy_level}}</p>
+<p>Mood: {{mood_range}}</p>
+<p>Emotions: <i>todo</i></p>
+{% if reflection %}
+<p>Reflection: {{reflection}}</p></div>
+{% endif %}
+
+<a href="/view_entries">View All Entries</a>
+<br>
+<a href='/edit_entry/{{entry_id}}'>Edit Entry</a>
 {% endblock %}

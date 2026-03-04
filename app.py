@@ -129,7 +129,14 @@ def view_entries():
 @app.route("/create_entry")
 @require_login
 def display_create_entry():
-    return render_template("create_entry.html")
+    return render_template(
+        "create_entry.html",
+        pending_emotions=session.get("pending_emotions", []),
+        entry_date=request.args.get("entry_date", ""),
+        energy_level=request.args.get("energy_level", ""),
+        mood_range=request.args.get("mood_range", ""),
+        reflection=request.args.get("reflection", ""),
+    )
 
 
 def validate_entry(entry_date, energy_level, mood_range):
@@ -146,9 +153,30 @@ def validate_entry(entry_date, energy_level, mood_range):
         raise ValueError("Missing a value for mood range")
 
 
+@app.route("/add_pending_emotion", methods=["POST"])
+@require_login
+def add_emotion_to_list():  # TODO
+    emotion = request.form.get("emotion", "").strip()
+    print(f"result of emotion from form: {emotion}")
+    if emotion:
+        session.setdefault("pending_emotions", [])
+        session["pending_emotions"].append(emotion)
+        session.modified = True
+        print(f"TEST: emotion added to session: {session['pending_emotions']}")
+    return redirect(
+        url_for(
+            "display_create_entry",
+            entry_date=request.form.get("entry_date", ""),
+            energy_level=request.form.get("energy_level", ""),
+            mood_range=request.form.get("mood_range", ""),
+            reflection=request.form.get("reflection", ""),
+        )
+    )
+
+
 @app.route("/create_entry", methods=["POST"])
 @require_login
-def create_entry():
+def create_entry():  # TODO add emotions
     # TODO maybe add a valid_request_body_keys_exist like budget.py
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
@@ -156,12 +184,18 @@ def create_entry():
     reflection = request.form.get("reflection")
 
     user_id = session["user_id"]
+    emotions = session.get("pending_emotions", "Nothing found")
+    print(f"TEST emotions: {emotions}")
     try:
         validate_entry(entry_date, energy_level, mood_range)
         entry_id = g.storage.create_new_entry(
             user_id, entry_date, energy_level, mood_range, reflection
         )
         print(f"SUCCESS: entry_id = {entry_id[0]}")
+        if emotions:
+            g.storage.add_emotions(entry_id, emotions)
+            print(f"SUCCESS: emotions added ...")
+            session["pending_emotions"] = []
         return redirect(f"/view_entry/{entry_id[0]}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
@@ -201,6 +235,23 @@ def display_entry(entry_id):  # TODO
         mood_range=mood_range,
         reflection=reflection,
     )
+
+
+# @app.route("/view_entry/<int:entry_id>", methods=["POST"])
+# @require_login
+# def add_emotion(entry_id):  # TODO
+#     emotion = request.form.get("emotion")
+#     g.storage.add_emotion()
+#     print(f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}")
+#     # TODO retrieve emotions
+#     return render_template(
+#         "view_entry.html",
+#         entry_id=id,
+#         date=date,
+#         energy_level=energy_level,
+#         mood_range=mood_range,
+#         reflection=reflection,
+#     )
 
 
 @app.route("/edit_entry/<int:entry_id>")

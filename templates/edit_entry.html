@@ -1,7 +1,6 @@
 {% extends 'layout.html' %} {% block content%}
 <h1>Edit an Entry</h1>
 <form method="post" action='/edit_entry/{{entry_id}}'> 
-{# todo idk if this action path is wporkijgn #}
   <div>
     <label for="entry_date"
       >Date:
@@ -84,6 +83,6 @@
 <br>
 <form action="{{ url_for('delete_entry', entry_id=entry_id) }}" 
                 method="post" class='delete_data'>
-            <button type="submit" class="delete_button">Delete Entry</button>
-          </form>
+  <button type="submit" class="delete_button">Delete Entry</button>
+</form>
 {% endblock %}

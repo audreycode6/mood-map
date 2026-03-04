@@ -1,5 +1,6 @@
 {% extends 'layout.html' %} {% block content%}
 <h1>Create an Entry</h1>
+
 <form method="post" action='{{ url_for("create_entry") }}'>
   <div>
     <label for="entry_date"
@@ -74,10 +75,40 @@
       >{{ reflection or '' }}</textarea>
     </label>
   </div>
-  <br />
+
+<br>
   <div>
     <button class="submit_button" type="submit">Create Entry</button>
     <a href="/view_entries">Cancel</a>
   </div>
 </form>
+
+
+<div>
+  <h1>Add emotions:</h1>
+  <form method="post" action="{{ url_for('add_emotion_to_list') }}">
+  <!-- carry entry form state -->
+    <input type="hidden" name="entry_date" value="{{ entry_date or '' }}" />
+    <input type="hidden" name="energy_level" value="{{ energy_level or '' }}" />
+    <input type="hidden" name="mood_range" value="{{ mood_range or '' }}" />
+    <input type="hidden" name="reflection" value="{{ reflection or '' }}" />
+    <div>
+        <label for='emotion'>Add emotions that you've felt throughout the day <i> -- one at a time</i>
+          <br>
+          <input id='emotion' name='emotion' placeholder='Silly, Anxious, etc...'>
+        </label>
+        <button type="submit">Add Emotion</button>
+    </div>
+  </form>
+    {% if pending_emotions %}
+    <p>Emotions:</p>
+    <ul>
+    {% for emotion in pending_emotions %}
+      <li>{{ emotion }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+
+
 {% endblock %}
