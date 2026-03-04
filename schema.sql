@@ -16,5 +16,6 @@ UNIQUE (user_id, entry_date)
 CREATE TABLE emotions (
 id serial PRIMARY KEY,
 entry_id int NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
-emotion text NOT NULL
+emotion text NOT NULL,
+UNIQUE (emotion, entry_id)
 );
