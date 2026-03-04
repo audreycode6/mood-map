@@ -155,11 +155,11 @@ class DatabasePersistence:
         query = """INSERT INTO emotions (entry_id, emotion)
         VALUES (%s, %s)"""
         print(
-            f"==> LOG: Executing query {query}, with entry_id: {entry_id} and emotion: {emotion}"
+            f"==> LOG: Executing query {query}, with entry_id: {entry_id} and emotion: {emotions}"
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                for emotion in emotions:
+                for emotion in emotions.split():
                     cursor.execute(
                         query,
                         (
@@ -169,11 +169,18 @@ class DatabasePersistence:
                     )
 
     def get_entry_emotions(self, entry_id):
-        query = "SELECT emotion FROM emotions WHERE entry_id = %s"
+        query = "SELECT emotion FROM emotions WHERE entry_id = %s ORDER BY emotion"
         print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
         with self._database_connect() as conn:
-            with conn.cursor() as cursor:
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
                 cursor.execute(query, (entry_id,))
+                results = cursor.fetchall()
+
+        emotions_list = []
+        for result in results:
+            emotions_list.extend(result)
+        print(f"emotions:{emotions_list}")
+        return emotions_list
 
     def edit_emotion(self, emotion, emotion_id):
         query = "UPDATE emotions SET emotion = %s WHERE id = %s"
@@ -184,9 +191,21 @@ class DatabasePersistence:
             with conn.cursor() as cursor:
                 cursor.execute(query, (emotion, emotion_id))
 
+    def get_emotions_id_and_entry_id(self, emotion):
+        query = "SELECT id, entry_id FROM emotions WHERE emotion = %s"
+        print(f"==> LOG: Executing query {query}, with emotion: {emotion}")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (emotion,))
+                entry_id = cursor.fetchone()
+                print(f"TEST query fetch : {entry_id}")
+                # cursor.execute(query, (emotion_id,))
+
+                return entry_id
+
     def delete_emotion(self, emotion_id):
         query = "DELETE FROM emotions WHERE id = %s"
-        print(f"==> LOG: Executing query {query}, with entry_id: {emotion_id}")
+        print(f"==> LOG: Executing query {query}, with emotion_id: {emotion_id}")
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (emotion_id,))
@@ -255,7 +274,8 @@ class DatabasePersistence:
                     CREATE TABLE emotions (
                     id serial PRIMARY KEY,
                     entry_id int NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
-                    emotion text NOT NULL
+                    emotion text NOT NULL,
+                    UNIQUE (emotion, entry_id)
                     );
                     """
                     )

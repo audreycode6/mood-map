@@ -4,7 +4,7 @@
 <form method="post" action='{{ url_for("create_entry") }}'>
   <div>
     <label for="entry_date"
-      >Date:
+      ><strong>Date</strong>
       <input
         id="entry_date"
         name="entry_date"
@@ -16,7 +16,7 @@
   <br />
   <div>
     <label for="energy_level"
-      >Energy:
+      ><strong>Energy</strong>
       <select id="energy_level" name="energy_level">
         <option value="">How's your energy today?</option>
         <option value="Very high energy" {% if energy_level=="Very high energy" %}selected{% endif %}>
@@ -41,7 +41,7 @@
   <br />
   <div>
     <label for="mood_range"
-      >Mood:
+      ><strong>Mood</strong>
       <select id="mood_range" name="mood_range">
         <option value="">How are you feeling today?</option>
         <option value="Very positive" {% if mood_range=="Very positive" %}selected{% endif %}>
@@ -63,18 +63,26 @@
       <br />
     </label>
   </div>
-  <br />
-  <div>
-    <label for="reflection"
-      >Reflection:
-      <br />
-      <textarea
-        id="reflection"
-        name="reflection"
-        placeholder="Notes on your day ..."
-      >{{ reflection or '' }}</textarea>
-    </label>
-  </div>
+</div>
+<br />
+<div>
+  <label for='emotions'><strong>Emotions you've felt throughout the day</strong> <i> -- seperated by a space</i>
+      <br>
+      <input id='emotions' name='emotions' placeholder='Silly Anxious etc...' value="{{ emotions or '' }}"">
+  </label>
+</div>
+<br>
+<div>
+  <label for="reflection"
+    ><strong>Reflection</strong>
+    <br />
+    <textarea
+      id="reflection"
+      name="reflection"
+      placeholder="Notes on your day ..."
+    >{{ reflection or '' }}</textarea>
+  </label>
+</div>
 
 <br>
   <div>
@@ -84,31 +92,7 @@
 </form>
 
 
-<div>
-  <h1>Add emotions:</h1>
-  <form method="post" action="{{ url_for('add_emotion_to_list') }}">
-  <!-- carry entry form state -->
-    <input type="hidden" name="entry_date" value="{{ entry_date or '' }}" />
-    <input type="hidden" name="energy_level" value="{{ energy_level or '' }}" />
-    <input type="hidden" name="mood_range" value="{{ mood_range or '' }}" />
-    <input type="hidden" name="reflection" value="{{ reflection or '' }}" />
-    <div>
-        <label for='emotion'>Add emotions that you've felt throughout the day <i> -- one at a time</i>
-          <br>
-          <input id='emotion' name='emotion' placeholder='Silly, Anxious, etc...'>
-        </label>
-        <button type="submit">Add Emotion</button>
-    </div>
-  </form>
-    {% if pending_emotions %}
-    <p>Emotions:</p>
-    <ul>
-    {% for emotion in pending_emotions %}
-      <li>{{ emotion }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-</div>
+
 
 
 {% endblock %}

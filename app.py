@@ -181,11 +181,10 @@ def create_entry():  # TODO add emotions
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
     mood_range = request.form.get("mood_range")
+    emotions = request.form.get("emotions")
     reflection = request.form.get("reflection")
 
     user_id = session["user_id"]
-    emotions = session.get("pending_emotions", "Nothing found")
-    print(f"TEST emotions: {emotions}")
     try:
         validate_entry(entry_date, energy_level, mood_range)
         entry_id = g.storage.create_new_entry(
@@ -193,9 +192,8 @@ def create_entry():  # TODO add emotions
         )
         print(f"SUCCESS: entry_id = {entry_id[0]}")
         if emotions:
-            g.storage.add_emotions(entry_id, emotions)
-            print(f"SUCCESS: emotions added ...")
-            session["pending_emotions"] = []
+            print(f"TEST: emotions {emotions}")
+            g.storage.add_emotions(entry_id[0], emotions)
         return redirect(f"/view_entry/{entry_id[0]}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
@@ -206,6 +204,7 @@ def create_entry():  # TODO add emotions
                 energy_level=energy_level,
                 mood_range=mood_range,
                 reflection=reflection,
+                emotions=emotions,
             ),
             404,
         )
@@ -225,7 +224,10 @@ def display_entry(entry_id):  # TODO
     id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
         entry_id
     )
+
     print(f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}")
+
+    emotions_list = g.storage.get_entry_emotions(entry_id)
     # TODO retrieve emotions
     return render_template(
         "view_entry.html",
@@ -234,6 +236,7 @@ def display_entry(entry_id):  # TODO
         energy_level=energy_level,
         mood_range=mood_range,
         reflection=reflection,
+        emotions=emotions_list,
     )
 
 
@@ -242,7 +245,7 @@ def display_entry(entry_id):  # TODO
 # def add_emotion(entry_id):  # TODO
 #     emotion = request.form.get("emotion")
 #     g.storage.add_emotion()
-#     print(f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}")
+
 #     # TODO retrieve emotions
 #     return render_template(
 #         "view_entry.html",
@@ -260,6 +263,7 @@ def display_edit_entry(entry_id):
     id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
         entry_id
     )
+    emotions_list = g.storage.get_entry_emotions(entry_id)
     return render_template(
         "edit_entry.html",
         entry_id=entry_id,
@@ -267,6 +271,7 @@ def display_edit_entry(entry_id):
         energy_level=energy_level,
         mood_range=mood_range,
         reflection=reflection,
+        emotions=emotions_list,
     )
 
 
@@ -326,6 +331,28 @@ def delete_entry(entry_id):
     g.storage.delete_entry(entry_id)
     print("Successfully deleted entry...")
     return render_template("view_entries.html")
+
+
+@app.route("/delete_emotion/<emotion>")
+@require_login
+def delete_emotion(emotion):
+    # TODO change emotions shcema to have unique emotion value: UNIQUE(emotion, entry_id)
+    emotion_id, entry_id = g.storage.get_emotions_id_and_entry_id(emotion)
+    print(f"TEst return: {entry_id}")
+    g.storage.delete_emotion(emotion_id)
+    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+        entry_id
+    )
+    emotions_list = g.storage.get_entry_emotions(entry_id)
+    return render_template(
+        "view_entry.html",
+        entry_id=entry_id,
+        entry_date=date,
+        energy_level=energy_level,
+        mood_range=mood_range,
+        reflection=reflection,
+        emotions=emotions_list,
+    )
 
 
 if __name__ == "__main__":

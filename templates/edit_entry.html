@@ -3,7 +3,7 @@
 <form method="post" action='/edit_entry/{{entry_id}}'> 
   <div>
     <label for="entry_date"
-      >Date:
+      ><strong>Date</strong>
       <input
         id="entry_date"
         name="entry_date"
@@ -15,7 +15,7 @@
   <br />
   <div>
     <label for="energy_level"
-      >Energy:
+      ><strong>Energy</strong>
       <select id="energy_level" name="energy_level">
         <option value="">How's your energy today?</option>
         <option value="Very high energy" {% if energy_level=="Very high energy" %}selected{% endif %}>
@@ -40,7 +40,7 @@
   <br />
   <div>
     <label for="mood_range"
-      >Mood:
+      ><strong>Mood</strong>
       <select id="mood_range" name="mood_range">
         <option value="">How are you feeling today?</option>
         <option value="Very positive" {% if mood_range=="Very positive" %}selected{% endif %}>
@@ -59,13 +59,21 @@
           Very negative
         </option>
       </select>
-      <br />
     </label>
   </div>
-  <br />
+  <div> 
+  {% if emotions%}
+  <p><strong>Emotions</strong></p>
+  <ul>
+  {% for emotion in emotions %}
+      <li>{{ emotion }} [edit emotion] <a href="/delete_emotion/{{emotion}}">[delete emotion]</a></li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+  </div>
   <div>
     <label for="reflection"
-      >Reflection:
+      ><strong>Reflection</strong>
       <br />
       <textarea
         id="reflection"
@@ -76,7 +84,7 @@
   </div>
   <br />
   <div>
-    <button class="submit_button" type="submit">Edit Entry</button>
+    <button class="submit_button" type="submit">Submit Edit</button>
     <a href="/view_entry/{{entry_id}}">Cancel</a>
   </div>
 </form>

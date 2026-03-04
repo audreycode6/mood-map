@@ -1,14 +1,21 @@
 {% extends 'layout.html' %} {% block content%}
 <h1>Entry from {{date}}</h1>
 <div>
-<p>Energy: {{energy_level}}</p>
-<p>Mood: {{mood_range}}</p>
-<p>Emotions: <i>todo</i></p>
-{% if reflection %}
-<p>Reflection: {{reflection}}</p></div>
+<p><strong>Energy </strong>{{energy_level}}</p>
+<p><strong>Mood </strong>{{mood_range}}</p>
+{% if emotions%}
+<p><strong>Emotions </strong></p>
+<ul>
+{% for emotion in emotions %}
+    <li>{{ emotion }}</li>
+{% endfor %}
+</ul>
 {% endif %}
-
-<a href="/view_entries">View All Entries</a>
+{% if reflection %}
+<p><strong>Reflection </strong> {{reflection}}</p></div>
 <br>
+{% endif %}
 <a href='/edit_entry/{{entry_id}}'>Edit Entry</a>
+<br>
+<a href="/view_entries">View All Entries</a>
 {% endblock %}
