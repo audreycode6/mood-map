@@ -181,7 +181,7 @@ def create_entry():  # TODO add emotions
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
     mood_range = request.form.get("mood_range")
-    emotions = request.form.get("emotions")
+    emotions_string = request.form.get("emotions")
     reflection = request.form.get("reflection")
 
     user_id = session["user_id"]
@@ -191,9 +191,9 @@ def create_entry():  # TODO add emotions
             user_id, entry_date, energy_level, mood_range, reflection
         )
         print(f"SUCCESS: entry_id = {entry_id[0]}")
-        if emotions:
-            print(f"TEST: emotions {emotions}")
-            g.storage.add_emotions(entry_id[0], emotions)
+        if emotions_string:
+            print(f"TEST emotions: {emotions_string}")
+            g.storage.add_emotions(entry_id[0], emotions_string)
         return redirect(f"/view_entry/{entry_id[0]}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
@@ -204,7 +204,7 @@ def create_entry():  # TODO add emotions
                 energy_level=energy_level,
                 mood_range=mood_range,
                 reflection=reflection,
-                emotions=emotions,
+                emotions=emotions_string,
             ),
             404,
         )
@@ -271,7 +271,7 @@ def display_edit_entry(entry_id):
         energy_level=energy_level,
         mood_range=mood_range,
         reflection=reflection,
-        emotions=emotions_list,
+        emotions=" ".join(emotions_list),
     )
 
 
@@ -289,6 +289,27 @@ def validate_edited_entry(entry_id, entry_date, energy_level, mood_range):
         raise ValueError("Missing a value for mood range")
 
 
+def validate_emotions(emotions_string, entry_id):
+    current_emotions = g.storage.get_entry_emotions(entry_id)
+    print(f"Current emotions: {current_emotions} vs emotions_edited {emotions_string}")
+    # TODO emotions when edited is viewed as different so deletion will not be reflected
+    # count strings in emotions_string and compare to current_emotions if count is off
+    """DELETE all emotions for entry and then readd emotions only check if there are doubles in list"""
+    new_emotions = []
+    count_emotions = {}
+    for emotion in emotions_string.split():
+        if emotion in count_emotions:
+            count_emotions[emotion] += 1
+            raise ValueError(f'This emotion, "{emotion}", is already listed ')
+        else:
+            count_emotions[emotion] = 1
+        if emotion not in current_emotions:
+            new_emotions.append(emotion)
+
+    print(f"emotions to add {new_emotions}")
+    return " ".join(new_emotions)
+
+
 @app.route("/edit_entry/<int:entry_id>", methods=["POST"])
 @require_login
 def edit_entry(entry_id):
@@ -298,16 +319,25 @@ def edit_entry(entry_id):
     energy_level = request.form.get("energy_level")
     mood_range = request.form.get("mood_range")
     reflection = request.form.get("reflection")
+    emotions = request.form.get("emotions")
 
     try:
         validate_edited_entry(entry_id, entry_date, energy_level, mood_range)
         g.storage.update_entry(
             entry_id, entry_date, energy_level, mood_range, reflection
-        )
+        )  # TODO only update new values?
         print("SUCCESS ..?")
+        if emotions:
+            print(f"TEST: emotions {emotions}")
+            # for each emotion that isnt int get_entry_emotions add to list
+            new_emotions = validate_emotions(
+                emotions, entry_id
+            )  # TODO error if multiple of same emoiton?
+            g.storage.add_emotions(entry_id, new_emotions)
         return redirect(f"/view_entry/{entry_id}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
+        emotions_list = g.storage.get_entry_emotions(entry_id)
         return (
             render_template(
                 "edit_entry.html",
@@ -316,13 +346,13 @@ def edit_entry(entry_id):
                 energy_level=energy_level,
                 mood_range=mood_range,
                 reflection=reflection,
+                emotions=" ".join(emotions_list),
             ),
             404,
         )
     except Exception as e:
         print(f"flash ERROR: {e}")
-
-    return render_template("view_entry.html", entry_id=entry_id)
+        return render_template("view_entries.html")
 
 
 @app.route("/delete_entry/<int:entry_id>", methods=["POST"])

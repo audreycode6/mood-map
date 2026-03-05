@@ -62,16 +62,14 @@
     </label>
   </div>
   <div> 
-  {% if emotions%}
-  <p><strong>Emotions</strong></p>
-  <ul>
-  {% for emotion in emotions %}
-      <li>{{ emotion }} [edit emotion] <a href="/delete_emotion/{{emotion}}">[delete emotion]</a></li>
-  {% endfor %}
-  </ul>
-  {% endif %}
+  <br>
+   <label for='emotions'><strong>Emotions you've felt throughout the day</strong> <i> -- seperated by a space</i>
+      <br>
+      <textarea id='emotions' name='emotions' placeholder='Silly Anxious etc...'>{{ emotions or '' }}</textarea>
+  </label>
   </div>
   <div>
+    <br>
     <label for="reflection"
       ><strong>Reflection</strong>
       <br />
@@ -89,8 +87,4 @@
   </div>
 </form>
 <br>
-<form action="{{ url_for('delete_entry', entry_id=entry_id) }}" 
-                method="post" class='delete_data'>
-  <button type="submit" class="delete_button">Delete Entry</button>
-</form>
 {% endblock %}
