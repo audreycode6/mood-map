@@ -29,9 +29,7 @@ def require_login(func):
         if not is_logged_in():
             session["protected_page_path"] = request.path
             flash("You must be logged in to do that.")
-            return redirect(
-                url_for("display_login")
-            )  # TODO how to remember and redirect to appropriate path if successful login
+            return redirect(url_for("display_login"))
 
         return func(*args, **kwargs)
 
@@ -122,30 +120,23 @@ def logout():
 @app.route("/view_entries")
 @require_login
 def view_entries():
-    # TODO
-    return render_template("view_entries.html")
+    user_id = session["user_id"]
+    entries_info = g.storage.get_users_entries_ids_and_date(user_id)
+    print(f"SUCCESS entries: {entries_info}")
+    return render_template("view_entries.html", entries_info=entries_info)
 
 
 @app.route("/create_entry")
 @require_login
 def display_create_entry():
-    return render_template(
-        "create_entry.html",
-        pending_emotions=session.get("pending_emotions", []),
-        entry_date=request.args.get("entry_date", ""),
-        energy_level=request.args.get("energy_level", ""),
-        mood_range=request.args.get("mood_range", ""),
-        reflection=request.args.get("reflection", ""),
-    )
+    return render_template("create_entry.html")
 
 
 def validate_entry(entry_date, energy_level, mood_range):
     if not entry_date:
         raise ValueError("Missing a date")
     # check that entry date for that user doesnt already exists
-    if g.storage.check_unique_date(
-        session["user_id"], entry_date
-    ):  # TODO when in edit mode do not care if it is same date
+    if g.storage.check_unique_date(session["user_id"], entry_date):
         raise ValueError(f"You already have an entry for this date: {entry_date}.")
     if not energy_level:
         raise ValueError("Missing a value for energy level")
@@ -153,30 +144,9 @@ def validate_entry(entry_date, energy_level, mood_range):
         raise ValueError("Missing a value for mood range")
 
 
-@app.route("/add_pending_emotion", methods=["POST"])
-@require_login
-def add_emotion_to_list():  # TODO
-    emotion = request.form.get("emotion", "").strip()
-    print(f"result of emotion from form: {emotion}")
-    if emotion:
-        session.setdefault("pending_emotions", [])
-        session["pending_emotions"].append(emotion)
-        session.modified = True
-        print(f"TEST: emotion added to session: {session['pending_emotions']}")
-    return redirect(
-        url_for(
-            "display_create_entry",
-            entry_date=request.form.get("entry_date", ""),
-            energy_level=request.form.get("energy_level", ""),
-            mood_range=request.form.get("mood_range", ""),
-            reflection=request.form.get("reflection", ""),
-        )
-    )
-
-
 @app.route("/create_entry", methods=["POST"])
 @require_login
-def create_entry():  # TODO add emotions
+def create_entry():
     # TODO maybe add a valid_request_body_keys_exist like budget.py
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
@@ -221,58 +191,48 @@ def create_entry():  # TODO add emotions
 @app.route("/view_entry/<int:entry_id>")
 @require_login
 def display_entry(entry_id):  # TODO
-    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
-        entry_id
-    )
-
-    print(f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}")
-
-    emotions_list = g.storage.get_entry_emotions(entry_id)
-    # TODO retrieve emotions
-    return render_template(
-        "view_entry.html",
-        entry_id=id,
-        date=date,
-        energy_level=energy_level,
-        mood_range=mood_range,
-        reflection=reflection,
-        emotions=emotions_list,
-    )
-
-
-# @app.route("/view_entry/<int:entry_id>", methods=["POST"])
-# @require_login
-# def add_emotion(entry_id):  # TODO
-#     emotion = request.form.get("emotion")
-#     g.storage.add_emotion()
-
-#     # TODO retrieve emotions
-#     return render_template(
-#         "view_entry.html",
-#         entry_id=id,
-#         date=date,
-#         energy_level=energy_level,
-#         mood_range=mood_range,
-#         reflection=reflection,
-#     )
+    try:
+        id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+            entry_id
+        )
+        print(
+            f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}"
+        )
+        emotions_list = g.storage.get_entry_emotions(entry_id)
+        return render_template(
+            "view_entry.html",
+            entry_id=id,
+            date=date,
+            energy_level=energy_level,
+            mood_range=mood_range,
+            reflection=reflection,
+            emotions=emotions_list,
+        )
+    except TypeError:
+        print("ERROR: unauthorized entry")  # TODO flash
+        return render_template("view_entries.html")
 
 
 @app.route("/edit_entry/<int:entry_id>")
 @require_login
 def display_edit_entry(entry_id):
-    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
-        entry_id
-    )
-    emotions_list = g.storage.get_entry_emotions(entry_id)
-    return render_template(
-        "edit_entry.html",
-        entry_id=entry_id,
-        entry_date=date,
-        energy_level=energy_level,
-        mood_range=mood_range,
-        reflection=reflection,
-        emotions=" ".join(emotions_list),
-    )
+    try:
+        id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+            entry_id
+        )
+        emotions_list = g.storage.get_entry_emotions(entry_id)
+        return render_template(
+            "edit_entry.html",
+            entry_id=entry_id,
+            entry_date=date,
+            energy_level=energy_level,
+            mood_range=mood_range,
+            reflection=reflection,
+            emotions=" ".join(emotions_list),
+        )
+    except TypeError:
+        print(f"ERROR: unauthorized entry")  # TODO flash
+        return render_template("view_entries.html")
 
 
 def validate_edited_entry(entry_id, entry_date, energy_level, mood_range):
@@ -289,13 +249,7 @@ def validate_edited_entry(entry_id, entry_date, energy_level, mood_range):
         raise ValueError("Missing a value for mood range")
 
 
-def validate_emotions(emotions_string, entry_id):
-    current_emotions = g.storage.get_entry_emotions(entry_id)
-    print(f"Current emotions: {current_emotions} vs emotions_edited {emotions_string}")
-    # TODO emotions when edited is viewed as different so deletion will not be reflected
-    # count strings in emotions_string and compare to current_emotions if count is off
-    """DELETE all emotions for entry and then readd emotions only check if there are doubles in list"""
-    new_emotions = []
+def validate_unique_emotions(emotions_string):
     count_emotions = {}
     for emotion in emotions_string.split():
         if emotion in count_emotions:
@@ -303,41 +257,34 @@ def validate_emotions(emotions_string, entry_id):
             raise ValueError(f'This emotion, "{emotion}", is already listed ')
         else:
             count_emotions[emotion] = 1
-        if emotion not in current_emotions:
-            new_emotions.append(emotion)
-
-    print(f"emotions to add {new_emotions}")
-    return " ".join(new_emotions)
 
 
 @app.route("/edit_entry/<int:entry_id>", methods=["POST"])
 @require_login
-def edit_entry(entry_id):
+def edit_entry_and_emotions(entry_id):
     # TODO prob can make the validation more generalized and reusable
     # currently takes all info and updates it all, rather than individual value that is diff
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
     mood_range = request.form.get("mood_range")
     reflection = request.form.get("reflection")
-    emotions = request.form.get("emotions")
+    emotions_string = request.form.get("emotions")
 
     try:
         validate_edited_entry(entry_id, entry_date, energy_level, mood_range)
         g.storage.update_entry(
             entry_id, entry_date, energy_level, mood_range, reflection
-        )  # TODO only update new values?
-        print("SUCCESS ..?")
-        if emotions:
-            print(f"TEST: emotions {emotions}")
-            # for each emotion that isnt int get_entry_emotions add to list
-            new_emotions = validate_emotions(
-                emotions, entry_id
-            )  # TODO error if multiple of same emoiton?
-            g.storage.add_emotions(entry_id, new_emotions)
+        )
+        print("SUCCESS entry_edit ..")
+        if emotions_string:
+            print(f"TEST: emotions {emotions_string}")
+            validate_unique_emotions(emotions_string)
+            g.storage.delete_entries_emotions(entry_id)
+            g.storage.add_emotions(entry_id, emotions_string)
+            print("SUCCESS emotions_edit ..")
         return redirect(f"/view_entry/{entry_id}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
-        emotions_list = g.storage.get_entry_emotions(entry_id)
         return (
             render_template(
                 "edit_entry.html",
@@ -346,7 +293,7 @@ def edit_entry(entry_id):
                 energy_level=energy_level,
                 mood_range=mood_range,
                 reflection=reflection,
-                emotions=" ".join(emotions_list),
+                emotions=emotions_string,
             ),
             404,
         )
@@ -363,26 +310,32 @@ def delete_entry(entry_id):
     return render_template("view_entries.html")
 
 
+# TODO maybe decorator to check that entry exists to prevent db queries to none existent objects // but post method soo ...
+
+
 @app.route("/delete_emotion/<emotion>")
 @require_login
 def delete_emotion(emotion):
-    # TODO change emotions shcema to have unique emotion value: UNIQUE(emotion, entry_id)
-    emotion_id, entry_id = g.storage.get_emotions_id_and_entry_id(emotion)
-    print(f"TEst return: {entry_id}")
-    g.storage.delete_emotion(emotion_id)
-    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
-        entry_id
-    )
-    emotions_list = g.storage.get_entry_emotions(entry_id)
-    return render_template(
-        "view_entry.html",
-        entry_id=entry_id,
-        entry_date=date,
-        energy_level=energy_level,
-        mood_range=mood_range,
-        reflection=reflection,
-        emotions=emotions_list,
-    )
+    try:
+        emotion_id, entry_id = g.storage.get_emotions_id_and_entry_id(emotion)
+        print(f"TEst return: {entry_id}")
+        g.storage.delete_emotion(emotion_id)
+        id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+            entry_id
+        )
+        emotions_list = g.storage.get_entry_emotions(entry_id)
+        return render_template(
+            "view_entry.html",
+            entry_id=entry_id,
+            entry_date=date,
+            energy_level=energy_level,
+            mood_range=mood_range,
+            reflection=reflection,
+            emotions=emotions_list,
+        )
+    except TypeError:
+        print(f"ERROR: unauthorized emotion")  # TODO flash
+        return render_template("view_entries.html")
 
 
 if __name__ == "__main__":

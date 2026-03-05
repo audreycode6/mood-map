@@ -106,6 +106,16 @@ class DatabasePersistence:
                 cursor.execute(query, (entry_id,))
                 return cursor.fetchone()
 
+    def get_users_entries_ids_and_date(self, user_id):
+        query = "SELECT * FROM entries WHERE user_id = %s ORDER BY entry_date"
+        print(f"""==> LOG: Executing query {query}, with user_id: {user_id}""")
+        with self._database_connect() as conn:
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                cursor.execute(query, (user_id,))
+                entries = cursor.fetchall()
+
+        return {entry[0]: entry[2] for entry in entries}
+
     def get_entry_date(self, entry_id):
         query = "SELECT entry_date FROM entries WHERE id = %s"
         print(f"""==> LOG: Executing query {query}, with entry_id: {entry_id}""")
@@ -199,9 +209,15 @@ class DatabasePersistence:
                 cursor.execute(query, (emotion,))
                 entry_id = cursor.fetchone()
                 print(f"TEST query fetch : {entry_id}")
-                # cursor.execute(query, (emotion_id,))
 
                 return entry_id
+
+    def delete_entries_emotions(self, entry_id):
+        query = "DELETE FROM emotions WHERE entry_id = %s"
+        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (entry_id,))
 
     def delete_emotion(self, emotion_id):
         query = "DELETE FROM emotions WHERE id = %s"
