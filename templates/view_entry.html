@@ -3,19 +3,22 @@
 <div>
 <p><strong>Energy </strong>{{energy_level}}</p>
 <p><strong>Mood </strong>{{mood_range}}</p>
+
 {% if emotions%}
 <p><strong>Emotions </strong></p>
 <ul>
 {% for emotion in emotions %}
-    <li>{{ emotion }} <a href="/delete_emotion/{{emotion}}">[delete]</a></li></li>
+    <li>{{ emotion }} <a href="/delete_emotion/{{entry_id}}//{{emotion}}">[delete]</a></li>
 {% endfor %}
 </ul>
 {% endif %}
+
 {% if reflection %}
 <p><strong>Reflection </strong> {{reflection}}</p></div>
 <br>
 {% endif %}
 <div>
+
 <a href='/edit_entry/{{entry_id}}'>Edit Entry</a>
 </div>
 
