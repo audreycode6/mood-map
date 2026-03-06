@@ -17,7 +17,6 @@ from database_persistence import DatabasePersistence
 
 app = Flask(__name__)
 app.secret_key = "dev_secret_key"
-
 ENTRY_VIEW_LIMIT = 5
 
 
@@ -153,12 +152,15 @@ def view_entries(page_num):
         )
     except ValueError as e:
         print(f"ERROR: {e}")
-        return render_template(
-            "view_entries.html",
-            entries_info=entries_info,
-            page_num=0,
-            valid_page_nums_list=valid_page_nums_list,
-        )
+        return (
+            render_template(
+                "view_entries.html",
+                entries_info=entries_info,
+                page_num=0,
+                valid_page_nums_list=valid_page_nums_list,
+            ),
+            404,
+        )  # TODO when to use render_template vs redirect
 
 
 @app.route("/create_entry")
@@ -216,8 +218,6 @@ def create_entry():
     except Exception as e:
         print(f"flash ERROR: {e}")
 
-    # redirect to display view
-
     # TODO if invalid input redirect to same page with flash message for each error
     # TODO intepolate valid entries so they dont have to rewrite
     return render_template("create_entry.html")
@@ -229,9 +229,6 @@ def display_entry(entry_id):  # TODO
     try:
         id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
             entry_id
-        )
-        print(
-            f"TEST entry data: {id, user_id, date, energy_level, mood_range, reflection}"
         )
         emotions_list = g.storage.get_entry_emotions(entry_id)
         return render_template(
@@ -245,7 +242,7 @@ def display_entry(entry_id):  # TODO
         )
     except TypeError:
         print("ERROR: unauthorized entry")  # TODO flash
-        return render_template("view_entries.html")
+        return render_template("view_entries.html"), 404
 
 
 @app.route("/edit_entry/<int:entry_id>")
@@ -267,7 +264,7 @@ def display_edit_entry(entry_id):
         )
     except TypeError:
         print(f"ERROR: unauthorized entry")  # TODO flash
-        return render_template("view_entries.html")
+        return render_template("view_entries.html"), 404
 
 
 def validate_edited_entry(entry_id, entry_date, energy_level, mood_range):
@@ -310,13 +307,10 @@ def edit_entry_and_emotions(entry_id):
         g.storage.update_entry(
             entry_id, entry_date, energy_level, mood_range, reflection
         )
-        print("SUCCESS entry_edit ..")
         if emotions_string:
-            print(f"TEST: emotions {emotions_string}")
             validate_unique_emotions(emotions_string)
             g.storage.delete_entries_emotions(entry_id)
             g.storage.add_emotions(entry_id, emotions_string)
-            print("SUCCESS emotions_edit ..")
         return redirect(f"/view_entry/{entry_id}")
     except ValueError as e:
         print(f"flash ERROR: {e}")
@@ -334,7 +328,7 @@ def edit_entry_and_emotions(entry_id):
         )
     except Exception as e:
         print(f"flash ERROR: {e}")
-        return render_template("view_entries.html")
+        return render_template("view_entries.html"), 504
 
 
 @app.route("/delete_entry/<int:entry_id>", methods=["POST"])
@@ -342,19 +336,18 @@ def edit_entry_and_emotions(entry_id):
 def delete_entry(entry_id):
     g.storage.delete_entry(entry_id)
     print("Successfully deleted entry...")
-    return render_template("view_entries.html")
+    return redirect(url_for("view_entries"))
 
 
 # TODO maybe decorator to check that entry exists to prevent db queries to none existent objects // but post method soo ...
 
 
-@app.route("/delete_emotion/<emotion>")
+@app.route("/delete_emotion/<int:entry_id>/<emotion>")
 @require_login
-def delete_emotion(emotion):
+def delete_emotion(entry_id, emotion):
     try:
-        emotion_id, entry_id = g.storage.get_emotions_id_and_entry_id(emotion)
-        print(f"TEst return: {entry_id}")
-        g.storage.delete_emotion(emotion_id)
+        emotion_id = g.storage.get_emotions_id(emotion, entry_id)
+        g.storage.delete_emotion(emotion_id, entry_id)
         id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
             entry_id
         )
