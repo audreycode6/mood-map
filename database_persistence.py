@@ -106,15 +106,28 @@ class DatabasePersistence:
                 cursor.execute(query, (entry_id,))
                 return cursor.fetchone()
 
-    def get_users_entries_ids_and_date(self, user_id):
-        query = "SELECT * FROM entries WHERE user_id = %s ORDER BY entry_date"
-        print(f"""==> LOG: Executing query {query}, with user_id: {user_id}""")
+    def get_users_entries_ids_and_date(self, user_id, page_num, page_view_limit):
+        # query = "SELECT * FROM entries WHERE user_id = %s ORDER BY entry_date"
+        query = "SELECT * FROM entries WHERE user_id = %s ORDER BY entry_date DESC LIMIT %s OFFSET %s"
+        print(
+            f"""==> LOG: Executing query {query}, 
+            with user_id: {user_id}, limit: {page_view_limit}, offset: {page_num}"""
+        )
+        offset_value = page_num * page_view_limit
         with self._database_connect() as conn:
             with conn.cursor(cursor_factory=DictCursor) as cursor:
-                cursor.execute(query, (user_id,))
+                cursor.execute(query, (user_id, page_view_limit, offset_value))
                 entries = cursor.fetchall()
 
         return {entry[0]: entry[2] for entry in entries}
+
+    def get_user_entry_count(self, user_id):
+        query = "SELECT COUNT(id) FROM entries WHERE user_id = %s"
+        print(f"""==> LOG: Executing query {query}, with user_id: {user_id}""")
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (user_id,))
+                return cursor.fetchone()
 
     def get_entry_date(self, entry_id):
         query = "SELECT entry_date FROM entries WHERE id = %s"

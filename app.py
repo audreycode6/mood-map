@@ -18,6 +18,8 @@ from database_persistence import DatabasePersistence
 app = Flask(__name__)
 app.secret_key = "dev_secret_key"
 
+ENTRY_VIEW_LIMIT = 5
+
 
 def is_logged_in():
     return session.get("username")
@@ -98,11 +100,10 @@ def login():
                 # if proceeding from login redirect go back to original path
                 protected_page = session.pop("protected_page_path", None)
                 if protected_page:
-                    print(f"TEST: {session['protected_page_path']}")
                     return redirect(session["protected_page_path"])
 
                 # default
-                return render_template("view_entries.html")
+                return redirect(url_for("view_entries"))
 
     # error redirect to same page with flash message
     print(f"==> flash ERror: Invalid credentials, please try again")
@@ -110,6 +111,7 @@ def login():
 
 
 @app.route("/logout", methods=["POST"])
+@require_login
 def logout():
     session.clear()
     print("You have been signed out.")
@@ -117,13 +119,46 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/view_entries")
+def get_valid_page_nums():
+    # get total of entries
+    total_entries = g.storage.get_user_entry_count(session["user_id"])
+    entry_range = list(range(1, total_entries[0] + 1, ENTRY_VIEW_LIMIT))
+    valid_page_nums = []
+    page_num = 0
+    for num in entry_range:
+        valid_page_nums.append(page_num)
+        page_num += 1
+    return valid_page_nums
+
+
+@app.route("/view_entries/", defaults={"page_num": 0})
+@app.route("/view_entries/<int:page_num>")
 @require_login
-def view_entries():
-    user_id = session["user_id"]
-    entries_info = g.storage.get_users_entries_ids_and_date(user_id)
-    print(f"SUCCESS entries: {entries_info}")
-    return render_template("view_entries.html", entries_info=entries_info)
+def view_entries(page_num):
+    try:
+        user_id = session["user_id"]
+        entries_info = g.storage.get_users_entries_ids_and_date(
+            user_id, page_num, ENTRY_VIEW_LIMIT
+        )
+        print(f"SUCCESS entries: {entries_info}")
+        valid_page_nums_list = get_valid_page_nums()
+        # TODO determin page numbers for views that are acceptable (total)
+        if page_num not in valid_page_nums_list:
+            raise ValueError("Error: Page out of entry range")
+        return render_template(
+            "view_entries.html",
+            entries_info=entries_info,
+            page_num=page_num,
+            valid_page_nums_list=valid_page_nums_list,
+        )
+    except ValueError as e:
+        print(f"ERROR: {e}")
+        return render_template(
+            "view_entries.html",
+            entries_info=entries_info,
+            page_num=0,
+            valid_page_nums_list=valid_page_nums_list,
+        )
 
 
 @app.route("/create_entry")

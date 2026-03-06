@@ -1,9 +1,29 @@
 {% extends 'layout.html' %} {% block content%}
 <h1>View Entries</h1>
+{% if entries_info %}
 <ul>
 {% for id, date in entries_info.items() %}
-<li><a href="/view_entry/{{id}}">{{date}} </a> </li>
-{% endfor %}</ul>
-
+<li><a href="/view_entry/{{id}}">{{date}}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<p>No entries yet ...</p>
+{% endif %}
 <a href="/create_entry">Create an Entry</a>
+{% if valid_page_nums_list%}
+<div>
+<br>
+<p>Entry Views</p>
+<ul>
+{% for num in valid_page_nums_list %}
+{% if num == page_num %}
+<li><a href="/view_entries/{{num}}"><strong>[{{num}}]</strong></a></li>
+{% else %}
+<li><a href="/view_entries/{{num}}">{{num}}</a></li>
+{% endif %}
+{% endfor %}
+</ul>
+
+</div>
+{% endif %}
 {% endblock%}
