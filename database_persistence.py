@@ -107,8 +107,10 @@ class DatabasePersistence:
                 return cursor.fetchone()
 
     def get_users_entries_ids_and_date(self, user_id, page_num, page_view_limit):
-        # query = "SELECT * FROM entries WHERE user_id = %s ORDER BY entry_date"
-        query = "SELECT * FROM entries WHERE user_id = %s ORDER BY entry_date DESC LIMIT %s OFFSET %s"
+        query = """SELECT * FROM entries 
+                WHERE user_id = %s 
+                ORDER BY entry_date 
+                DESC LIMIT %s OFFSET %s"""
         print(
             f"""==> LOG: Executing query {query}, 
             with user_id: {user_id}, limit: {page_view_limit}, offset: {page_num}"""
@@ -175,8 +177,7 @@ class DatabasePersistence:
     """
 
     def add_emotions(self, entry_id, emotions):
-        query = """INSERT INTO emotions (entry_id, emotion)
-        VALUES (%s, %s)"""
+        query = """INSERT INTO emotions (entry_id, emotion) VALUES (%s, %s)"""
         print(
             f"==> LOG: Executing query {query}, with entry_id: {entry_id} and emotion: {emotions}"
         )
@@ -202,7 +203,6 @@ class DatabasePersistence:
         emotions_list = []
         for result in results:
             emotions_list.extend(result)
-        print(f"emotions:{emotions_list}")
         return emotions_list
 
     def edit_emotion(self, emotion, emotion_id):
@@ -214,16 +214,17 @@ class DatabasePersistence:
             with conn.cursor() as cursor:
                 cursor.execute(query, (emotion, emotion_id))
 
-    def get_emotions_id_and_entry_id(self, emotion):
-        query = "SELECT id, entry_id FROM emotions WHERE emotion = %s"
-        print(f"==> LOG: Executing query {query}, with emotion: {emotion}")
+    def get_emotions_id(self, emotion, entry_id):
+        query = "SELECT id FROM emotions WHERE emotion = %s and entry_id = %s"
+        print(
+            f"==> LOG: Executing query {query}, with emotion: {emotion} and entry_id = {entry_id}"
+        )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (emotion,))
-                entry_id = cursor.fetchone()
-                print(f"TEST query fetch : {entry_id}")
+                cursor.execute(query, (emotion, entry_id))
+                emotions_id = cursor.fetchone()
 
-                return entry_id
+                return emotions_id[0]
 
     def delete_entries_emotions(self, entry_id):
         query = "DELETE FROM emotions WHERE entry_id = %s"
@@ -232,12 +233,20 @@ class DatabasePersistence:
             with conn.cursor() as cursor:
                 cursor.execute(query, (entry_id,))
 
-    def delete_emotion(self, emotion_id):
-        query = "DELETE FROM emotions WHERE id = %s"
-        print(f"==> LOG: Executing query {query}, with emotion_id: {emotion_id}")
+    def delete_emotion(self, emotion_id, entry_id):
+        query = "DELETE FROM emotions WHERE id = %s and entry_id = %s"
+        print(
+            f"==> LOG: Executing query {query}, with emotion_id: {emotion_id} and entry_id: {entry_id}"
+        )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (emotion_id,))
+                cursor.execute(
+                    query,
+                    (
+                        emotion_id,
+                        entry_id,
+                    ),
+                )
 
     """
     ----------------
