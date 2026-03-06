@@ -224,7 +224,9 @@ class DatabasePersistence:
                 cursor.execute(query, (emotion, entry_id))
                 emotions_id = cursor.fetchone()
 
-                return emotions_id[0]
+                if emotions_id:
+                    return emotions_id[0]
+                return None
 
     def delete_entries_emotions(self, entry_id):
         query = "DELETE FROM emotions WHERE entry_id = %s"
