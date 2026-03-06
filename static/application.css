@@ -2,10 +2,27 @@ body {
   font-family: sans-serif;
   padding: 1em;
 }
+.flash {
+  max-width: 960px;
+  padding: 3px 20px;
+  margin: 10px auto 1.5em auto;
+  color: #3399cc;
+  background: #cbe5f2;
+}
 
-.message {
-  background-color: rgb(255, 255, 128);
-  padding: 10px;
+.flash p {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.flash.error {
+  color: rgb(154, 14, 14);
+  background: rgba(241, 152, 152, 0.741);
+}
+
+.flash.success {
+  color: #16782c;
+  background: #8eeba2bb;
 }
 
 .delete_button:hover {
@@ -13,7 +30,7 @@ body {
 }
 
 .submit_button:hover {
-  background-color: rgb(142, 237, 142);
+  background-color: #8eeba2bb;
 }
 
 #signed_in_text {
