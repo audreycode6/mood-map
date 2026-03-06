@@ -20,3 +20,14 @@ body {
   font-size: 0.9em;
   color: gray;
 }
+
+a:link,
+a:visited,
+a:active {
+  color: rgb(38, 121, 193);
+  text-decoration: none;
+}
+
+a:hover {
+  color: rgb(54, 51, 237);
+}
