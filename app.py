@@ -187,6 +187,7 @@ def view_entries(page_num):
             user_id, page_num, ENTRY_VIEW_LIMIT
         )
         valid_page_nums_list = get_valid_page_nums()
+        print(f"TEST list: {valid_page_nums_list}")
         if page_num not in valid_page_nums_list:
             raise ValueError("Error: Page out of entry range")
         return render_template(
@@ -249,8 +250,6 @@ def create_entry():
     except Exception as e:
         flash(e, "error")
 
-    # TODO if invalid input redirect to same page with flash message for each error
-    # TODO intepolate valid entries so they dont have to rewrite
     return render_template("create_entry.html"), 504
 
 
