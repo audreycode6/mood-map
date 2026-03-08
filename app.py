@@ -44,15 +44,18 @@ def get_valid_page_nums():
 
 
 def validate_entry(entry_date, energy_level, mood_range):
+    error_list = []
     if not entry_date:
-        raise ValueError("Missing a date")
-    # check that entry date for that user doesnt already exists
-    if g.storage.check_unique_date(session["user_id"], entry_date):
-        raise ValueError(f"You already have an entry for this date: {entry_date}.")
+        error_list.append("Missing a date")
+    if entry_date:  # check that entry date for that user doesnt already exists
+        if g.storage.check_unique_date(session["user_id"], entry_date):
+            error_list.append(f"You already have an entry for this date: {entry_date}.")
     if not energy_level:
-        raise ValueError("Missing a value for energy level")
+        error_list.append("Missing a value for energy level")
     if not mood_range:
-        raise ValueError("Missing a value for mood range")
+        error_list.append("Missing a value for mood range")
+
+    return error_list
 
 
 def validate_edited_entry(entry_id, entry_date, energy_level, mood_range):
@@ -114,24 +117,27 @@ def register():
     username = request.form.get("username").strip().lower()
     password = request.form.get("password").strip()
 
-    if username and password:
-        if not g.storage.user_exists(username):
-            hashed_pw = hashpw(password.encode("utf-8"), gensalt())
-            # convert to str before storing in db
-            hashed_pw_str = hashed_pw.decode("utf-8")
+    error_list = []
+    user_exists = g.storage.user_exists(username)
 
-            # create user
-            g.storage.register_new_user(username, hashed_pw_str)
-            flash(f"User '{username}', was registered", "success")
-            return render_template("login.html")
+    if user_exists:
+        error_list.append(f"User '{username}' already exists")
 
-        else:
-            error = f"User '{username}' already exists"
+    if not username or not password:
+        error_list.append("Missing input")
 
-    else:
-        error = "Missing input"
+    if username and password and not user_exists:
+        hashed_pw = hashpw(password.encode("utf-8"), gensalt())
+        # convert to str before storing in db
+        hashed_pw_str = hashed_pw.decode("utf-8")
 
-    flash(f"{error}, please try again", "error")
+        # create user
+        g.storage.register_new_user(username, hashed_pw_str)
+        flash(f"'{username}' has been registered!", "success")
+        return render_template("login.html")
+
+    for error in error_list:
+        flash(error, "error")
     return render_template("register.html", username=username), 422
 
 
@@ -170,7 +176,7 @@ def login():
 
 
 @app.route("/logout", methods=["POST"])
-@require_login  # TODO is this neccessary?
+@require_login
 def logout():
     session.clear()
     flash("You have been signed out.")
@@ -187,8 +193,8 @@ def view_entries(page_num):
             user_id, page_num, ENTRY_VIEW_LIMIT
         )
         valid_page_nums_list = get_valid_page_nums()
-        print(f"TEST list: {valid_page_nums_list}")
-        if page_num not in valid_page_nums_list:
+        # validate page view of entries
+        if page_num != 0 and page_num not in valid_page_nums_list:
             raise ValueError("Error: Page out of entry range")
         return render_template(
             "view_entries.html",
@@ -227,26 +233,29 @@ def create_entry():
 
     user_id = session["user_id"]
     try:
-        validate_entry(entry_date, energy_level, mood_range)
+        error_list = validate_entry(entry_date, energy_level, mood_range)
+        if error_list:
+            for error in error_list:
+                flash(error, "error")
+            return (
+                render_template(
+                    "create_entry.html",
+                    entry_date=entry_date,
+                    energy_level=energy_level,
+                    mood_range=mood_range,
+                    reflection=reflection,
+                    emotions=emotions_string,
+                ),
+                404,
+            )
+
         entry_id = g.storage.create_new_entry(
             user_id, entry_date, energy_level, mood_range, reflection
         )
         if emotions_string:
             g.storage.add_emotions(entry_id[0], emotions_string)
         return redirect(f"/view_entry/{entry_id[0]}")
-    except ValueError as e:
-        flash(e, "error")
-        return (
-            render_template(
-                "create_entry.html",
-                entry_date=entry_date,
-                energy_level=energy_level,
-                mood_range=mood_range,
-                reflection=reflection,
-                emotions=emotions_string,
-            ),
-            404,
-        )
+
     except Exception as e:
         flash(e, "error")
 
