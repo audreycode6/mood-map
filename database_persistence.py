@@ -73,7 +73,7 @@ class DatabasePersistence:
         (user_id, entry_date, energy_level, mood_range, reflection)
         VALUES
         (%s, %s, %s, %s, %s)"""
-        query_2 = "SELECT id FROM entries WHERE entry_date = %s"
+        query_2 = "SELECT id FROM entries WHERE entry_date = %s and user_id = %s"
 
         print(
             f"""
@@ -82,7 +82,11 @@ class DatabasePersistence:
             mood_range: {mood_range}, and reflection: {reflection}
             """
         )
-        print(f"""==> LOG: Executing query {query_2}, with entry_date: {entry_date}""")
+        print(
+            f"""==> LOG: Executing query {query_2}, 
+              with entry_date: {entry_date} 
+              and user_id: {user_id}"""
+        )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
@@ -95,7 +99,7 @@ class DatabasePersistence:
                         reflection,
                     ),
                 )
-                cursor.execute(query_2, (entry_date,))
+                cursor.execute(query_2, (entry_date, user_id))
                 return cursor.fetchone()
 
     def get_entry(self, entry_id):
