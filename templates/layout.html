@@ -21,14 +21,8 @@
           </p>
         </form>
         {% else %}
-        <ul>
-          <li>
-            <a href="{{ url_for('register') }}">Register</a>
-          </li>
-          <li>
-            <a href="{{ url_for('login') }}">Login</a>
-          </li>
-        </ul>
+        <a id=page_link href="{{ url_for('register') }}">[ Register ]</a>
+        <a id=page_link href="{{ url_for('login') }}">[ Login ]</a>
         {% endif %}
       </div>
       {% with messages = get_flashed_messages(with_categories=true) %}
