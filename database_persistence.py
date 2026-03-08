@@ -22,7 +22,7 @@ class DatabasePersistence:
 
     """
     ----------------
-    USERS QUERies:
+    USERS QUERIES:
     ----------------
     """
 
@@ -45,7 +45,7 @@ class DatabasePersistence:
 
     """
     ----------------
-    ENTRIES QUERies:
+    ENTRIES QUERIES:
     ----------------
     """
 
@@ -252,7 +252,7 @@ class DatabasePersistence:
 
     """
     ----------------
-    Set Up Schema:
+    SET UP SCHEMA
     ----------------
     """
 
