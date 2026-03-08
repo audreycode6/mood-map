@@ -8,25 +8,24 @@
 <p><strong>Emotions </strong></p>
 <ul>
 {% for emotion in emotions %}
-    <li>{{ emotion }} <a href="/delete_emotion/{{entry_id}}//{{emotion}}">[delete]</a></li>
+    <li>{{ emotion }} <a id=delete_link href="/delete_emotion/{{entry_id}}//{{emotion}}">[ delete ]</a></li>
 {% endfor %}
 </ul>
 {% endif %}
 
 {% if reflection %}
 <p><strong>Reflection </strong> {{reflection}}</p></div>
-<br>
 {% endif %}
+
+<br>
 <div>
-
-<a href='/edit_entry/{{entry_id}}'>Edit Entry</a>
+<a id=page_link href='/edit_entry/{{entry_id}}'><strong>[ Edit Entry ]</strong></a>
 </div>
-
 <form action="{{ url_for('delete_entry', entry_id=entry_id) }}" 
                 method="post" class='delete_data'>
     <br>
   <button type="submit" class="delete_button">Delete Entry</button>
 </form>
 <br>
-<a href="/view_entries">View All Entries</a>
+<a href="/view_entries">← View All Entries</a>
 {% endblock %}

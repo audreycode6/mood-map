@@ -38,10 +38,26 @@ body {
   color: gray;
 }
 
+#delete_link {
+  color: rgb(211, 69, 69);
+}
+
+#delete_link:hover {
+  color: rgb(154, 14, 14);
+}
+
+#page_link {
+  color: rgb(80, 168, 235);
+}
+
+#page_link:hover {
+  color: rgb(10, 138, 236);
+}
+
 a:link,
 a:visited,
 a:active {
-  color: rgb(38, 121, 193);
+  color: rgb(75, 89, 100);
   text-decoration: none;
 }
 
