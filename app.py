@@ -59,27 +59,34 @@ def validate_entry(entry_date, energy_level, mood_range):
 
 
 def validate_edited_entry(entry_id, entry_date, energy_level, mood_range):
+    error_list = []
     if not entry_date:
-        raise ValueError("Missing a date")
-    entry_date_is_same = g.storage.get_entry_date(entry_id)[0]
-    if str(entry_date_is_same) != entry_date:  # if not current entry_date value
-        # check that entry date for that user doesnt already exists
-        if g.storage.check_unique_date(session["user_id"], entry_date):
-            raise ValueError(f"You already have an entry for this date: {entry_date}.")
+        error_list.append("Missing a date")
+    if entry_date:
+        entry_date_is_same = g.storage.get_entry_date(entry_id)[0]
+        if str(entry_date_is_same) != entry_date:  # if not current entry_date value
+            # check that entry date for that user doesnt already exists
+            if g.storage.check_unique_date(session["user_id"], entry_date):
+                error_list.append(
+                    f"You already have an entry for this date: {entry_date}."
+                )
     if not energy_level:
-        raise ValueError("Missing a value for energy level")
+        error_list.append("Missing a value for energy level")
     if not mood_range:
-        raise ValueError("Missing a value for mood range")
+        error_list.append("Missing a value for mood range")
+
+    return error_list
 
 
-def validate_unique_emotions(emotions_string):
+def validate_unique_emotions(emotions_string, error_list):
     count_emotions = {}
     for emotion in emotions_string.split():
         if emotion in count_emotions:
             count_emotions[emotion] += 1
-            raise ValueError(f'This emotion, "{emotion}", is already listed ')
+            error_list.append(f'This emotion, "{emotion}", is already listed ')
         else:
             count_emotions[emotion] = 1
+    return error_list
 
 
 def require_login(func):
@@ -224,7 +231,6 @@ def display_create_entry():
 @app.route("/create_entry", methods=["POST"])
 @require_login
 def create_entry():
-    # TODO maybe add a valid_request_body_keys_exist like budget.py
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
     mood_range = request.form.get("mood_range")
@@ -309,8 +315,6 @@ def display_edit_entry(entry_id):
 @app.route("/edit_entry/<int:entry_id>", methods=["POST"])
 @require_login
 def edit_entry_and_emotions(entry_id):
-    # TODO prob can make the validation more generalized and reusable
-    # currently takes all info and updates it all, rather than individual value that is diff
     entry_date = request.form.get("entry_date")
     energy_level = request.form.get("energy_level")
     mood_range = request.form.get("mood_range")
@@ -318,29 +322,39 @@ def edit_entry_and_emotions(entry_id):
     emotions_string = request.form.get("emotions")
 
     try:
-        validate_edited_entry(entry_id, entry_date, energy_level, mood_range)
+        error_list = validate_edited_entry(
+            entry_id, entry_date, energy_level, mood_range
+        )
+        if emotions_string:
+            error_list = validate_unique_emotions(emotions_string, error_list)
+        if error_list:
+            for error in error_list:
+                flash(error, "error")
+            return (
+                render_template(
+                    "edit_entry.html",
+                    entry_id=entry_id,
+                    entry_date=entry_date,
+                    energy_level=energy_level,
+                    mood_range=mood_range,
+                    reflection=reflection,
+                    emotions=emotions_string,
+                ),
+                404,
+            )
+
         g.storage.update_entry(
             entry_id, entry_date, energy_level, mood_range, reflection
         )
-        if emotions_string:
-            validate_unique_emotions(emotions_string)
-            g.storage.delete_entries_emotions(entry_id)
-            g.storage.add_emotions(entry_id, emotions_string)
+        """
+            in order to edit emotions list need to
+            delete all current emotions to ensure deletions
+            in edit mode are applied accurately
+        """
+        g.storage.delete_entries_emotions(entry_id)
+        g.storage.add_emotions(entry_id, emotions_string)
         return redirect(f"/view_entry/{entry_id}")
-    except ValueError as e:
-        flash(e, "error")
-        return (
-            render_template(
-                "edit_entry.html",
-                entry_id=entry_id,
-                entry_date=entry_date,
-                energy_level=energy_level,
-                mood_range=mood_range,
-                reflection=reflection,
-                emotions=emotions_string,
-            ),
-            404,
-        )
+
     except Exception as e:
         flash(e, "error")
         return redirect(url_for("view_entries")), 504
