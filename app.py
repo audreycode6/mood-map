@@ -141,7 +141,7 @@ def register():
         # create user
         g.storage.register_new_user(username, hashed_pw_str)
         flash(f"'{username}' has been registered!", "success")
-        return render_template("login.html")
+        return redirect(url_for("display_login"))
 
     for error in error_list:
         flash(error, "error")
@@ -219,7 +219,7 @@ def view_entries(page_num):
                 valid_page_nums_list=valid_page_nums_list,
             ),
             404,
-        )  # TODO when to use render_template vs redirect
+        )
 
 
 @app.route("/create_entry")
@@ -270,7 +270,7 @@ def create_entry():
 
 @app.route("/view_entry/<int:entry_id>")
 @require_login
-def display_entry(entry_id):  # TODO
+def display_entry(entry_id):
     try:
         id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
             entry_id
@@ -309,7 +309,10 @@ def display_edit_entry(entry_id):
         )
     except TypeError:
         flash("Unauthorized entry id", "error")
-        return redirect(url_for("view_entries")), 404
+        return (
+            redirect(url_for("view_entries")),
+            404,
+        )  # TODO idk if redirect or render // test the type error
 
 
 @app.route("/edit_entry/<int:entry_id>", methods=["POST"])
@@ -364,11 +367,8 @@ def edit_entry_and_emotions(entry_id):
 @require_login
 def delete_entry(entry_id):
     g.storage.delete_entry(entry_id)
-    flash("Successfully deleted entry...", "success")  # TODO should i display date?
+    flash("Successfully deleted entry...", "success")
     return redirect(url_for("view_entries"))
-
-
-# TODO maybe decorator to check that entry exists to prevent db queries to none existent objects // but post method soo ...
 
 
 @app.route("/delete_emotion/<int:entry_id>/<emotion>")
