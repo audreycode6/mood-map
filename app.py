@@ -95,7 +95,7 @@ def require_login(func):
         if not is_logged_in():
             session["protected_page_path"] = request.path
             flash("You must be logged in to do that.")
-            return redirect(url_for("display_login"))
+            return redirect(url_for("display_login")), 404
 
         return func(*args, **kwargs)
 
@@ -148,7 +148,7 @@ def register():
     return render_template("register.html", username=username), 422
 
 
-@app.route("/login")
+@app.route("/")
 def display_login():
     return render_template("login.html")
 
@@ -172,7 +172,7 @@ def login():
                 # if proceeding from login redirect go back to original path
                 protected_page = session.pop("protected_page_path", None)
                 if protected_page:
-                    return redirect(session["protected_page_path"])
+                    return redirect(protected_page)
 
                 # default
                 return redirect(url_for("view_entries"))
@@ -183,11 +183,10 @@ def login():
 
 
 @app.route("/logout", methods=["POST"])
-@require_login
 def logout():
     session.clear()
     flash("You have been signed out.")
-    return redirect(url_for("login"))
+    return redirect(url_for("display_login"))
 
 
 @app.route("/view_entries/", defaults={"page_num": 0})
@@ -202,7 +201,9 @@ def view_entries(page_num):
         valid_page_nums_list = get_valid_page_nums()
         # validate page view of entries
         if page_num != 0 and page_num not in valid_page_nums_list:
-            raise ValueError("Error: Page out of entry range")
+            raise ValueError(f"Page {page_num} out of entry views range")
+
+        session["page_num"] = page_num
         return render_template(
             "view_entries.html",
             entries_info=entries_info,
@@ -211,15 +212,7 @@ def view_entries(page_num):
         )
     except ValueError as e:
         flash(f"{e}", "error")
-        return (
-            render_template(
-                "view_entries.html",
-                entries_info=entries_info,
-                page_num=0,
-                valid_page_nums_list=valid_page_nums_list,
-            ),
-            404,
-        )
+        return redirect(url_for("view_entries")), 404
 
 
 @app.route("/create_entry")
@@ -312,7 +305,7 @@ def display_edit_entry(entry_id):
         return (
             redirect(url_for("view_entries")),
             404,
-        )  # TODO idk if redirect or render // test the type error
+        )
 
 
 @app.route("/edit_entry/<int:entry_id>", methods=["POST"])
@@ -368,7 +361,7 @@ def edit_entry_and_emotions(entry_id):
 def delete_entry(entry_id):
     g.storage.delete_entry(entry_id)
     flash("Successfully deleted entry...", "success")
-    return redirect(url_for("view_entries"))
+    return redirect(f"/view_entries/{session['page_num']}")
 
 
 @app.route("/delete_emotion/<int:entry_id>/<emotion>")
