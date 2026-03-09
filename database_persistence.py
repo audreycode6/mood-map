@@ -196,42 +196,6 @@ class DatabasePersistence:
                         ),
                     )
 
-    def get_entry_emotions(self, entry_id):
-        query = "SELECT emotion FROM emotions WHERE entry_id = %s ORDER BY emotion"
-        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
-        with self._database_connect() as conn:
-            with conn.cursor(cursor_factory=DictCursor) as cursor:
-                cursor.execute(query, (entry_id,))
-                results = cursor.fetchall()
-
-        emotions_list = []
-        for result in results:
-            emotions_list.extend(result)
-        return emotions_list
-
-    def edit_emotion(self, emotion, emotion_id):
-        query = "UPDATE emotions SET emotion = %s WHERE id = %s"
-        print(
-            f"==> LOG: Executing query {query}, with emotion: {emotion} and emotion_id = {emotion_id}"
-        )
-        with self._database_connect() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query, (emotion, emotion_id))
-
-    def get_emotions_id(self, emotion, entry_id):
-        query = "SELECT id FROM emotions WHERE emotion = %s and entry_id = %s"
-        print(
-            f"==> LOG: Executing query {query}, with emotion: {emotion} and entry_id = {entry_id}"
-        )
-        with self._database_connect() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query, (emotion, entry_id))
-                emotions_id = cursor.fetchone()
-
-                if emotions_id:
-                    return emotions_id[0]
-                return None
-
     def delete_entries_emotions(self, entry_id):
         query = "DELETE FROM emotions WHERE entry_id = %s"
         print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
@@ -253,6 +217,33 @@ class DatabasePersistence:
                         entry_id,
                     ),
                 )
+
+    def get_entry_emotions(self, entry_id):
+        query = "SELECT emotion FROM emotions WHERE entry_id = %s ORDER BY emotion"
+        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
+        with self._database_connect() as conn:
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                cursor.execute(query, (entry_id,))
+                results = cursor.fetchall()
+
+        emotions_list = []
+        for result in results:
+            emotions_list.extend(result)
+        return emotions_list
+
+    def get_emotions_id(self, emotion, entry_id):
+        query = "SELECT id FROM emotions WHERE emotion = %s and entry_id = %s"
+        print(
+            f"==> LOG: Executing query {query}, with emotion: {emotion} and entry_id = {entry_id}"
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (emotion, entry_id))
+                emotions_id = cursor.fetchone()
+
+                if emotions_id:
+                    return emotions_id[0]
+                return None
 
     """
     ----------------
