@@ -22,7 +22,7 @@
         </form>
         {% else %}
         <a id=page_link href="{{ url_for('register') }}">[ Register ]</a>
-        <a id=page_link href="{{ url_for('login') }}">[ Login ]</a>
+        <a id=page_link href="{{ url_for('display_login') }}">[ Login ]</a>
         {% endif %}
       </div>
       {% with messages = get_flashed_messages(with_categories=true) %}
