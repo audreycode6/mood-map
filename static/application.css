@@ -2,6 +2,7 @@ body {
   font-family: sans-serif;
   padding: 1em;
 }
+
 .flash {
   max-width: 960px;
   padding: 3px 20px;
@@ -38,7 +39,9 @@ body {
   color: gray;
 }
 #title {
-  color: rgb(118, 126, 133);
+  background: -webkit-linear-gradient(#f43f0d, #eace5e, #255adf);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 #delete_link {
@@ -54,7 +57,8 @@ body {
 }
 
 #page_link:hover {
-  color: rgb(10, 138, 236);
+  color: #255adf;
+  /* rgb(10, 138, 236); */
 }
 
 a:link,
