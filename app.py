@@ -127,13 +127,20 @@ def register():
     error_list = []
     user_exists = g.storage.user_exists(username)
 
+    valid_user_length = len(username) <= 30
+
+    if not valid_user_length:
+        error_list.append(
+            f"User '{username}' is too long. Please enter a username shorter than 30 characters."
+        )
+
     if user_exists:
         error_list.append(f"User '{username}' already exists")
 
     if not username or not password:
         error_list.append("Missing input")
 
-    if username and password and not user_exists:
+    if (username and password) and (not user_exists) and (valid_user_length):
         hashed_pw = hashpw(password.encode("utf-8"), gensalt())
         # convert to str before storing in db
         hashed_pw_str = hashed_pw.decode("utf-8")
