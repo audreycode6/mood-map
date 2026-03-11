@@ -13,6 +13,7 @@
   <body>
     <main>
       <div>
+      <h1 id='title'>Mood Map</h1>
         {% if session['username'] %}
         <form method="post" action="{{ url_for('logout')}}">
           <p id="signed_in_text">

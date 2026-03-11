@@ -1,10 +1,11 @@
 {% extends 'layout.html' %} {% block content%}
-<h1>View Entries</h1>
-<a id=page_link href="/create_entry"><strong>[ Create an Entry ]</strong></a>
+<h2>View Entries</h2>
+<h3><a id=page_link href="/create_entry"><strong>[ Create an Entry ]</strong></a></h3>
 {% if entries_info %}
 <ul>
 {% for id, date in entries_info.items() %}
 <li><a href="/view_entry/{{id}}">{{date}}</a></li>
+<br>
 {% endfor %}
 </ul>
 {% else %}

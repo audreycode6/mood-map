@@ -37,6 +37,9 @@ body {
   font-size: 0.9em;
   color: gray;
 }
+#title {
+  color: rgb(118, 126, 133);
+}
 
 #delete_link {
   color: rgb(211, 69, 69);
