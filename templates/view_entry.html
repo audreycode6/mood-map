@@ -1,5 +1,6 @@
 {% extends 'layout.html' %} {% block content%}
 <h2>Entry from {{date}}</h2>
+
 <div>
 <p><strong>Energy </strong>{{energy_level}}</p>
 <p><strong>Mood </strong>{{mood_range}}</p>
@@ -14,10 +15,12 @@
 {% endif %}
 
 {% if reflection %}
-<p><strong>Reflection </strong> {{reflection}}</p></div>
+<p><strong>Reflection </strong> {{reflection}}</p>
 {% endif %}
+</div>
 
 <br>
+
 <div>
 <h3><a id=page_link href='/edit_entry/{{entry_id}}'><strong>[ Edit Entry ]</strong></a></h3>
 </div>
@@ -25,6 +28,7 @@
                 method="post" class='delete_data'>
   <button type="submit" class="delete_button">Delete Entry</button>
 </form>
+
 <br>
 <a href="/view_entries/{{session['page_num']}}">← View All Entries</a>
 {% endblock %}

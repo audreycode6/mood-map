@@ -1,6 +1,7 @@
 {% extends 'layout.html' %} {% block content%}
 <h2>View Entries</h2>
 <h3><a id=page_link href="/create_entry"><strong>[ Create an Entry ]</strong></a></h3>
+
 {% if entries_info %}
 <ul>
 {% for id, date in entries_info.items() %}
@@ -16,13 +17,15 @@
 <div>
 <br>
 <p>Entry Views</p>
-{# if page num is 0 dont show prev#}
+{# if page num is 0 dont show prev #}
 {% if page_num != 0 %}
 <a href="/view_entries/{{page_num-1}}">< Previous</a>
 {% endif %}
 {# current #}
+
 <a id=page_link href="/view_entries/{{page_num}}"><strong>{{page_num + 1}}</strong></a>
-{# if page_num is max page view dont show next #}
+
+{# if page_num is max page view don't show next #}
 {% if page_num != valid_page_nums_list[-1] %}
 <a href="/view_entries/{{page_num+1}}">Next ></a>
 {% endif %}
