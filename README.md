@@ -2,6 +2,8 @@
 
 ### A Python/Flask/Jinja application backed by PostgreSQL that allows users to create and manage emotional check-ins over time, creating a personal record of mood range, energy levels, reflections, and emotions.
 
+_Created by: Audrey Theriault-Allaire_
+
 ## Set Up & Installation
 
 ### Prequisites (must be installed before proceeding):
@@ -100,9 +102,11 @@
 
 - 3 tables: `users`, `entries`, and `emotions`
 - **`entries` have a 1 to many relationship with `emotions`.**
-  - an entry can have 0 to many instances emotions
+  - an entry can have 0 to many instances of emotions
   - an emotion has 1 and only 1 instance of an entry
-    **Key Details**
+
+**Key Details**
+
 - `users`:
   - limit on length of username (<=30)
   - stores only hashed pw, not plain text; hashing pw with bcrypt
