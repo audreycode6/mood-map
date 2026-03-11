@@ -87,6 +87,10 @@ def validate_entry_date(entry_date, entry_id):
 
 
 def validate_unique_emotions(emotions_string, error_list):
+    """
+    check input emotions for duplicate emotion value
+    returns list of error values if duplicate else empty list
+    """
     count_emotions = {}
     for emotion in emotions_string.split():
         if emotion in count_emotions:
@@ -98,6 +102,14 @@ def validate_unique_emotions(emotions_string, error_list):
 
 
 def validate_registration(username, password):
+    """
+    check username and password is valid:
+        - not empty
+        - username is valid length
+        - username doesnt exist in users table
+    return list of errors (empty if valid input else list of error messages)
+    """
+
     error_list = []
     user_exists = g.storage.user_exists(username)
     valid_user_length = len(username) <= 30
@@ -117,6 +129,13 @@ def validate_registration(username, password):
 
 
 def validate_login(username, password):
+    """
+    check input username and password is valid:
+        - not empty
+        - username exists in users table
+        - input pw matches the hashed pw for associated username
+    returns user_id if valid login, else False
+    """
     if username and password:  # not missing input
         result = g.storage.user_exists(username)
         if result:  # valid user
@@ -133,7 +152,7 @@ def require_login(func):
         if not is_logged_in():
             session["protected_page_path"] = request.path
             flash("You must be logged in to do that.")
-            return redirect(url_for("display_login")), 404
+            return redirect(url_for("display_login"))
 
         return func(*args, **kwargs)
 
@@ -195,7 +214,7 @@ def login():
     if not user_id:
         # error redirect to same page with flash message
         flash("Invalid credentials, please try again", "error")
-        return render_template("login.html"), 404
+        return render_template("login.html"), 401
 
     # valid login
     # store username in session to track logged in user
@@ -222,26 +241,22 @@ def logout():
 @app.route("/view_entries/<int:page_num>")
 @require_login
 def view_entries(page_num):
-    try:
-        # validate page view of entries
-        valid_page_nums_list = get_valid_page_nums()
-        if page_num != 0 and page_num not in valid_page_nums_list:
-            raise ValueError(f"Page {page_num} out of Entry Views range")
+    # validate page view of entries
+    valid_page_nums_list = get_valid_page_nums()
+    if page_num != 0 and page_num not in valid_page_nums_list:
+        flash(f"Page {page_num} out of Entry Views range", "error")
+        return redirect(url_for("view_entries"))
 
-        # valid page view
-        entries_info = g.storage.get_users_entries_ids_and_date(
-            session["user_id"], page_num, ENTRY_VIEW_LIMIT
-        )
-        session["page_num"] = page_num
-        return render_template(
-            "view_entries.html",
-            entries_info=entries_info,
-            page_num=page_num,
-            valid_page_nums_list=valid_page_nums_list,
-        )
-    except ValueError as e:
-        flash(f"{e}", "error")
-        return redirect(url_for("view_entries")), 404
+    entries_info = g.storage.get_users_entries_ids_and_date(
+        session["user_id"], page_num, ENTRY_VIEW_LIMIT
+    )
+    session["page_num"] = page_num
+    return render_template(
+        "view_entries.html",
+        entries_info=entries_info,
+        page_num=page_num,
+        valid_page_nums_list=valid_page_nums_list,
+    )
 
 
 @app.route("/create_entry")
@@ -260,35 +275,30 @@ def create_entry():
     reflection = request.form.get("reflection")
 
     user_id = session["user_id"]
-    try:
-        # validate input
-        error_list = validate_entry(entry_date, energy_level, mood_range)
-        if error_list:
-            for error in error_list:
-                flash(error, "error")
-            return (
-                render_template(
-                    "create_entry.html",
-                    entry_date=entry_date,
-                    energy_level=energy_level,
-                    mood_range=mood_range,
-                    reflection=reflection,
-                    emotions=emotions_string,
-                ),
-                404,
-            )
-        # valid input
-        entry_id = g.storage.create_new_entry(
-            user_id, entry_date, energy_level, mood_range, reflection
+
+    # validate input
+    error_list = validate_entry(entry_date, energy_level, mood_range)
+    if error_list:
+        for error in error_list:
+            flash(error, "error")
+        return (
+            render_template(
+                "create_entry.html",
+                entry_date=entry_date,
+                energy_level=energy_level,
+                mood_range=mood_range,
+                reflection=reflection,
+                emotions=emotions_string,
+            ),
+            422,
         )
-        if emotions_string:
-            g.storage.add_emotions(entry_id[0], emotions_string)
-        return redirect(f"/view_entry/{entry_id[0]}")
-
-    except Exception as e:
-        flash(e, "error")
-
-    return render_template("create_entry.html"), 504
+    # valid input
+    entry_id = g.storage.create_new_entry(
+        user_id, entry_date, energy_level, mood_range, reflection
+    )
+    if emotions_string:
+        g.storage.add_emotions(entry_id[0], emotions_string)
+    return redirect(f"/view_entry/{entry_id[0]}")
 
 
 @app.route("/view_entry/<int:entry_id>")
@@ -310,7 +320,7 @@ def display_entry(entry_id):
         )
     except TypeError:
         flash(f"Unauthorized entry id: {entry_id}", "error")
-        return redirect(url_for("view_entries")), 404
+        return redirect(url_for("view_entries"))
 
 
 @app.route("/edit_entry/<int:entry_id>")
@@ -332,10 +342,7 @@ def display_edit_entry(entry_id):
         )
     except TypeError:
         flash(f"Unauthorized entry id: {entry_id}", "error")
-        return (
-            redirect(url_for("view_entries")),
-            404,
-        )
+        return redirect(url_for("view_entries"))
 
 
 @app.route("/edit_entry/<int:entry_id>", methods=["POST"])
@@ -347,41 +354,35 @@ def edit_entry_and_emotions(entry_id):
     reflection = request.form.get("reflection")
     emotions_string = request.form.get("emotions")
 
-    try:
-        error_list = validate_entry(entry_date, energy_level, mood_range, entry_id)
-        if emotions_string:
-            error_list = validate_unique_emotions(emotions_string, error_list)
-        if error_list:
-            for error in error_list:
-                flash(error, "error")
-            return (
-                render_template(
-                    "edit_entry.html",
-                    entry_id=entry_id,
-                    entry_date=entry_date,
-                    energy_level=energy_level,
-                    mood_range=mood_range,
-                    reflection=reflection,
-                    emotions=emotions_string,
-                ),
-                404,
-            )
+    error_list = validate_entry(entry_date, energy_level, mood_range, entry_id)
+    if emotions_string:
+        error_list = validate_unique_emotions(emotions_string, error_list)
 
-        g.storage.update_entry(
-            entry_id, entry_date, energy_level, mood_range, reflection
+    if error_list:
+        for error in error_list:
+            flash(error, "error")
+        return (
+            render_template(
+                "edit_entry.html",
+                entry_id=entry_id,
+                entry_date=entry_date,
+                energy_level=energy_level,
+                mood_range=mood_range,
+                reflection=reflection,
+                emotions=emotions_string,
+            ),
+            422,
         )
-        """
-        in order to edit emotions_string need to
-        delete all current emotions to ensure deletions/additions
-        in edit mode are applied accurately
-        """
-        g.storage.delete_entries_emotions(entry_id)
-        g.storage.add_emotions(entry_id, emotions_string)
-        return redirect(f"/view_entry/{entry_id}")
 
-    except Exception as e:
-        flash(e, "error")
-        return redirect(url_for("view_entries")), 504
+    g.storage.update_entry(entry_id, entry_date, energy_level, mood_range, reflection)
+    """
+    in order to edit emotions_string need to
+    delete all current emotions to ensure deletions/additions
+    in edit mode are applied accurately
+    """
+    g.storage.delete_entries_emotions(entry_id)
+    g.storage.add_emotions(entry_id, emotions_string)
+    return redirect(url_for("display_entry", entry_id=entry_id))
 
 
 @app.route("/delete_entry/<int:entry_id>", methods=["POST"])
@@ -390,34 +391,23 @@ def delete_entry(entry_id):
     entry_date = g.storage.get_entry_date(entry_id)
     g.storage.delete_entry(entry_id)
     flash(f"Successfully deleted entry from: {entry_date[0]}", "success")
-    return redirect(f"/view_entries/{session['page_num']}")
+    return redirect(url_for("view_entries", page_num=session["page_num"]))
 
 
 @app.route("/delete_emotion/<int:entry_id>/<emotion>")
 @require_login
 def delete_emotion(entry_id, emotion):
-    try:
-        emotion_id = g.storage.get_emotions_id(emotion, entry_id)
-        if emotion_id is None:
-            raise TypeError()
-
-        g.storage.delete_emotion(emotion_id, entry_id)
-        id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
-            entry_id
-        )
-        emotions_list = g.storage.get_entry_emotions(entry_id)
-        return render_template(
-            "view_entry.html",
-            entry_id=entry_id,
-            entry_date=date,
-            energy_level=energy_level,
-            mood_range=mood_range,
-            reflection=reflection,
-            emotions=emotions_list,
-        )
-    except TypeError:
+    emotion_id = g.storage.get_emotions_id(emotion, entry_id)
+    if emotion_id is None:
         flash(f"Invalid emotion: {emotion}", "error")
-        return redirect(f"/edit_entry/{entry_id}"), 404
+        return redirect(url_for("display_edit_entry", entry_id=entry_id))
+
+    g.storage.delete_emotion(emotion_id, entry_id)
+    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+        entry_id
+    )
+    emotions_list = g.storage.get_entry_emotions(entry_id)
+    return redirect(url_for("display_entry", entry_id=entry_id))
 
 
 if __name__ == "__main__":
