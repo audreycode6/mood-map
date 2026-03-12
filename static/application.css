@@ -44,8 +44,13 @@ body {
   font-size: 0.9em;
   color: gray;
 }
+
+.error_page_text {
+  color: rgb(211, 69, 69);
+}
 #title {
   background: -webkit-linear-gradient(#f43f0d, #eace5e, #255adf);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
