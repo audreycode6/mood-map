@@ -49,14 +49,14 @@ INSERT INTO entries (user_id, entry_date, energy_level, mood_range, reflection) 
 -- Seed emotions
 INSERT INTO emotions (entry_id, emotion) VALUES
 (1,  'motivated'), (1,  'happy'),
-(2,  'content'),
+(2,  'content'), (2,  'grateful'), (2,  'social'), (2,  'motivated')
 (3,  'tired'),     (3,  'calm'),
 (4,  'energized'), (4,  'proud'),
 (6,  'stressed'),  (6,  'overwhelmed'),
 (7,  'hopeful'),
 (8,  'joyful'),    (8,  'grateful'),
 (9,  'fatigued'),  (9,  'sad'),
-(10, 'neutral'),
+(10, 'surprised'),
 (11, 'accomplished'), (11, 'relieved'),
 (12, 'happy'),     (12, 'relaxed'),
 (14, 'content'),   (14, 'satisfied');
