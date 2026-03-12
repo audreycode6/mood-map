@@ -115,9 +115,9 @@ _Created by: Audrey Theriault-Allaire_
   - `entries(user_id)` references `users(id)` on delete cascade
   - `entries(reflection)` is optional
 - `emotions`:
+  - an entry can have 0 to many emotions
   - `emotions(entry_id)` references `entries(id)` on delete cascade
   - emotions must have unique emotion and entry_id -- no duplicate emotions in an entry: `UNIQUE(entry_id, emotion)`
-  - an entry can have 0 to many emotions
 
 ### DESIGN CHOICE — Emotion Updates via Delete-and-Replace:
 
@@ -128,17 +128,18 @@ This serves as the UPDATE implementation for the `emotions` table — from the
 user's perspective, emotions are being edited; at the SQL level, this is
 achieved via DELETE + INSERT rather than an UPDATE statement.
 
-Why?:
-Emotions are submitted as a single freeform string (e.g. "happy, sad, silly")
+**Why?:**
+Emotions are submitted as a single string comprised of emotion strings seperate by space (e.g. "happy sad silly")
 but stored as individual rows in the `emotions` table, each linked by entry_id.
 
-    A comparison approach would require:
-        1. Split the new string into indivdual emotion strings
-        2. Querying all existing emotion rows for this entry
-        3. Computing additions and deletions separately
-        4. Running multiple targeted INSERT/DELETE queries
+A comparison approach would require:
 
-    Since emotions have no meaningful state beyond their text and entry association
-    (no timestamps, counts, or other metadata), preserving individual rows across
-    edits has no benefit. Delete-and-replace is simpler and cheap at
-    the scale of per-user journal entries.
+1.  Split the new string into indivdual emotion strings
+2.  Querying all existing emotion rows for this entry
+3.  Computing additions and deletions separately
+4.  Running multiple targeted INSERT/DELETE queries
+
+Since emotions have no meaningful state beyond their text and entry association
+(no timestamps, counts, or other metadata), preserving individual rows across
+edits has no benefit. **Delete-and-replace is simpler and cheap at
+the scale of per-user journal entries.**
