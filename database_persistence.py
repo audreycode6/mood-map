@@ -47,6 +47,22 @@ class DatabasePersistence:
     ----------------
     """
 
+    def check_user_has_entry_id(self, user_id, entry_id):
+        query = "SELECT * FROM entries WHERE user_id = %s and id = %s"
+        print(
+            f"==> LOG: Executing query {query}, with user_id: {user_id} and entry_id {entry_id}"
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    query,
+                    (
+                        user_id,
+                        entry_id,
+                    ),
+                )
+                return cursor.fetchone()
+
     def check_unique_date(self, user_id, entry_date):
         query = "SELECT * FROM entries WHERE user_id = %s and entry_date = %s"
         print(
@@ -100,12 +116,15 @@ class DatabasePersistence:
                 cursor.execute(query_2, (entry_date, user_id))
                 return cursor.fetchone()
 
-    def get_entry(self, entry_id):
-        query = "SELECT * FROM entries WHERE id = %s"
-        print(f"""==> LOG: Executing query {query}, with entry_id: {entry_id}""")
+    def get_entry(self, entry_id, user_id):
+        query = "SELECT * FROM entries WHERE id = %s and user_id = %s"
+        print(
+            f"""==> LOG: Executing query {query}, 
+              with entry_id: {entry_id} and user_id: {user_id}"""
+        )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (entry_id,))
+                cursor.execute(query, (entry_id, user_id))
                 return cursor.fetchone()
 
     def get_users_entries_ids_and_date(self, user_id, page_num, page_view_limit):
@@ -133,15 +152,26 @@ class DatabasePersistence:
                 cursor.execute(query, (user_id,))
                 return cursor.fetchone()
 
-    def get_entry_date(self, entry_id):
-        query = "SELECT entry_date FROM entries WHERE id = %s"
-        print(f"""==> LOG: Executing query {query}, with entry_id: {entry_id}""")
+    def get_entry_date(self, entry_id, user_id):
+        query = "SELECT entry_date FROM entries WHERE id = %s and user_id = %s"
+        print(
+            f"""==> LOG: Executing query {query},
+              with entry_id: {entry_id} and user_id: {user_id}"""
+        )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (entry_id,))
+                cursor.execute(
+                    query,
+                    (
+                        entry_id,
+                        user_id,
+                    ),
+                )
                 return cursor.fetchone()
 
-    def update_entry(self, entry_id, entry_date, energy_level, mood_range, reflection):
+    def update_entry(
+        self, entry_id, entry_date, energy_level, mood_range, reflection, user_id
+    ):
 
         query = """UPDATE entries 
         SET 
@@ -149,28 +179,46 @@ class DatabasePersistence:
         energy_level = %s, 
         mood_range = %s,
         reflection = %s
-        WHERE id = %s"""
+        WHERE id = %s
+        and user_id = %s"""
         print(
             f"""==> LOG: Executing query {query}, 
               with entry_date: {entry_date}, 
               energy_level: {energy_level},
               mood_range: {mood_range}, 
               reflection: {reflection},
-              entry_id: {entry_id}"""
+              entry_id: {entry_id},
+              and user_id: {user_id}
+            """
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
                     query,
-                    (entry_date, energy_level, mood_range, reflection, entry_id),
+                    (
+                        entry_date,
+                        energy_level,
+                        mood_range,
+                        reflection,
+                        entry_id,
+                        user_id,
+                    ),
                 )
 
-    def delete_entry(self, entry_id):
-        query = "DELETE FROM entries WHERE id = %s"
-        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
+    def delete_entry(self, entry_id, user_id):
+        query = "DELETE FROM entries WHERE id = %s and user_id = %s"
+        print(
+            f"==> LOG: Executing query {query}, with entry_id: {entry_id} and user_id: {user_id}"
+        )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (entry_id,))
+                cursor.execute(
+                    query,
+                    (
+                        entry_id,
+                        user_id,
+                    ),
+                )
 
     """
     ----------------
