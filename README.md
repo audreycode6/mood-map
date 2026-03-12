@@ -28,7 +28,7 @@ _Created by: Audrey Theriault-Allaire_
 1. **Unzip** the project archive and navigate into the project folder:
 
    ```bash
-   cd mood_map
+   cd <name-of-folder-you-unzipped> # e.g. mood_map
    ```
 
 2. **Install dependencies** via Poetry:
