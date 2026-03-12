@@ -37,6 +37,12 @@ ____________
 """
 
 
+@app.route("/<invalid_path>")
+def catch_all(invalid_path):
+    flash(f"Page '{invalid_path}' doesn't exist.", "error")
+    return render_template("error_page.html"), 404
+
+
 @app.route("/")
 def index():
     return redirect(url_for("view_entries"))
