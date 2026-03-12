@@ -138,13 +138,14 @@ def update_entry_and_emotions(
         entry_id, entry_date, energy_level, mood_range, reflection, session["user_id"]
     )
 
-    # Update emotions
-    """
-    DESIGN CHOICE: Updating emotions -> Delete and re-add all emotions anew
-    see README for more details
-    """
-    g.storage.delete_entries_emotions(entry_id)
-    g.storage.add_emotions(entry_id, emotions_string)
+    if emotions_string:
+        # Update emotions
+        """
+        DESIGN CHOICE: Updating emotions -> Delete and re-add all emotions anew
+        see README for more details
+        """
+        g.storage.delete_entries_emotions(entry_id)
+        g.storage.add_emotions(entry_id, emotions_string)
 
     return redirect(url_for("display_entry", entry_id=entry_id))
 
