@@ -1,7 +1,12 @@
 from contextlib import contextmanager
-
+import logging
+from textwrap import dedent
 import psycopg2
 from psycopg2.extras import DictCursor
+
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+logger = logging.getLogger(__name__)
 
 
 class DatabasePersistence:
@@ -26,7 +31,7 @@ class DatabasePersistence:
 
     def user_exists(self, username):
         query = "SELECT * FROM users WHERE username = %s"
-        print(f"==> LOG: Executing query {query}, with username: {username}")
+        logger.info(f"Executing query: {query}, with username: {username}")
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (username,))
@@ -34,8 +39,8 @@ class DatabasePersistence:
 
     def register_new_user(self, username, hashed_password):
         query = "INSERT INTO users (username, password_hash) VALUES (%s, %s)"
-        print(
-            f"==> LOG: Executing query {query}, with username: {username} and pwhash {hashed_password}"
+        logger.info(
+            f"Executing query: {query}, with username: {username} and pwhash {hashed_password}"
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -47,26 +52,10 @@ class DatabasePersistence:
     ----------------
     """
 
-    def check_user_has_entry_id(self, user_id, entry_id):
-        query = "SELECT * FROM entries WHERE user_id = %s and id = %s"
-        print(
-            f"==> LOG: Executing query {query}, with user_id: {user_id} and entry_id {entry_id}"
-        )
-        with self._database_connect() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    query,
-                    (
-                        user_id,
-                        entry_id,
-                    ),
-                )
-                return cursor.fetchone()
-
     def check_unique_date(self, user_id, entry_date):
         query = "SELECT * FROM entries WHERE user_id = %s and entry_date = %s"
-        print(
-            f"==> LOG: Executing query {query}, with user_id: {user_id} and entry_date {entry_date}"
+        logger.info(
+            f"Executing query: {query}, with user_id: {user_id} and entry_date {entry_date}"
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -89,17 +78,21 @@ class DatabasePersistence:
         (%s, %s, %s, %s, %s)"""
         query_2 = "SELECT id FROM entries WHERE entry_date = %s and user_id = %s"
 
-        print(
-            f"""
-            ==> LOG: Executing query {query}, with user_id: {user_id},
+        logger.info(
+            dedent(
+                f"""
+            Executing query: {query}, with user_id: {user_id},
             entry_date: {entry_date}, energy_level: {energy_level},
             mood_range: {mood_range}, and reflection: {reflection}
             """
+            )
         )
-        print(
-            f"""==> LOG: Executing query {query_2}, 
+        logger.info(
+            dedent(
+                f"""Executing query: {query_2}, 
               with entry_date: {entry_date} 
               and user_id: {user_id}"""
+            )
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -118,9 +111,11 @@ class DatabasePersistence:
 
     def get_entry(self, entry_id, user_id):
         query = "SELECT * FROM entries WHERE id = %s and user_id = %s"
-        print(
-            f"""==> LOG: Executing query {query}, 
+        logger.info(
+            dedent(
+                f"""Executing query: {query}, 
               with entry_id: {entry_id} and user_id: {user_id}"""
+            )
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -132,9 +127,11 @@ class DatabasePersistence:
                 WHERE user_id = %s 
                 ORDER BY entry_date 
                 DESC LIMIT %s OFFSET %s"""
-        print(
-            f"""==> LOG: Executing query {query}, 
+        logger.info(
+            dedent(
+                f"""Executing query: {query}, 
             with user_id: {user_id}, limit: {page_view_limit}, offset: {page_num}"""
+            )
         )
         offset_value = page_num * page_view_limit
         with self._database_connect() as conn:
@@ -146,7 +143,7 @@ class DatabasePersistence:
 
     def get_user_entry_count(self, user_id):
         query = "SELECT COUNT(id) FROM entries WHERE user_id = %s"
-        print(f"""==> LOG: Executing query {query}, with user_id: {user_id}""")
+        logger.info(f"Executing query: {query}, with user_id: {user_id}")
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (user_id,))
@@ -154,9 +151,11 @@ class DatabasePersistence:
 
     def get_entry_date(self, entry_id, user_id):
         query = "SELECT entry_date FROM entries WHERE id = %s and user_id = %s"
-        print(
-            f"""==> LOG: Executing query {query},
+        logger.info(
+            dedent(
+                f"""Executing query: {query},
               with entry_id: {entry_id} and user_id: {user_id}"""
+            )
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -181,8 +180,9 @@ class DatabasePersistence:
         reflection = %s
         WHERE id = %s
         and user_id = %s"""
-        print(
-            f"""==> LOG: Executing query {query}, 
+        logger.info(
+            dedent(
+                f"""Executing query: {query}, 
               with entry_date: {entry_date}, 
               energy_level: {energy_level},
               mood_range: {mood_range}, 
@@ -190,6 +190,7 @@ class DatabasePersistence:
               entry_id: {entry_id},
               and user_id: {user_id}
             """
+            )
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -207,8 +208,8 @@ class DatabasePersistence:
 
     def delete_entry(self, entry_id, user_id):
         query = "DELETE FROM entries WHERE id = %s and user_id = %s"
-        print(
-            f"==> LOG: Executing query {query}, with entry_id: {entry_id} and user_id: {user_id}"
+        logger.info(
+            f"Executing query: {query}, with entry_id: {entry_id} and user_id: {user_id}"
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -222,14 +223,14 @@ class DatabasePersistence:
 
     """
     ----------------
-    EMOTION QUERies:
+    EMOTION QUERIES:
     ----------------
     """
 
     def add_emotions(self, entry_id, emotions):
-        query = """INSERT INTO emotions (entry_id, emotion) VALUES (%s, %s)"""
-        print(
-            f"==> LOG: Executing query {query}, with entry_id: {entry_id} and emotion: {emotions}"
+        query = "INSERT INTO emotions (entry_id, emotion) VALUES (%s, %s)"
+        logger.info(
+            f"Executing query: {query}, with entry_id: {entry_id} and emotion: {emotions}"
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -244,15 +245,15 @@ class DatabasePersistence:
 
     def delete_entries_emotions(self, entry_id):
         query = "DELETE FROM emotions WHERE entry_id = %s"
-        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
+        logger.info(f"Executing query: {query}, with entry_id: {entry_id}")
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (entry_id,))
 
     def delete_emotion(self, emotion_id, entry_id):
         query = "DELETE FROM emotions WHERE id = %s and entry_id = %s"
-        print(
-            f"==> LOG: Executing query {query}, with emotion_id: {emotion_id} and entry_id: {entry_id}"
+        logger.info(
+            f"Executing query: {query}, with emotion_id: {emotion_id} and entry_id: {entry_id}"
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -266,7 +267,7 @@ class DatabasePersistence:
 
     def get_entry_emotions(self, entry_id):
         query = "SELECT emotion FROM emotions WHERE entry_id = %s ORDER BY emotion"
-        print(f"==> LOG: Executing query {query}, with entry_id: {entry_id}")
+        logger.info(f"Executing query: {query}, with entry_id: {entry_id}")
         with self._database_connect() as conn:
             with conn.cursor(cursor_factory=DictCursor) as cursor:
                 cursor.execute(query, (entry_id,))
@@ -279,8 +280,8 @@ class DatabasePersistence:
 
     def get_emotions_id(self, emotion, entry_id):
         query = "SELECT id FROM emotions WHERE emotion = %s and entry_id = %s"
-        print(
-            f"==> LOG: Executing query {query}, with emotion: {emotion} and entry_id = {entry_id}"
+        logger.info(
+            f"Executing query: {query}, with emotion: {emotion} and entry_id = {entry_id}"
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
