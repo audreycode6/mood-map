@@ -68,3 +68,34 @@ def validate_unique_emotions(emotions_string, error_list):
         else:
             count_emotions[emotion] = 1
     return error_list
+
+
+def current_emotions_match_emotions_string(emotions_string, entry_id):
+    current_emotions_list = g.storage.get_entry_emotions(entry_id)
+    input_emotions_list = emotions_string.split()
+    # make list sorted alphabetically like current_emotions_list_is
+    new_emotions_list = sorted(input_emotions_list)
+    return current_emotions_list == new_emotions_list
+
+
+def get_dict_of_attributes_and_values_to_edit(
+    input_attribute_value_dict, entry_id, user_id
+):
+    session
+    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+        entry_id, user_id
+    )
+    current_attributes_dict = {
+        "entry_date": date,
+        "energy_level": energy_level,
+        "mood_range": mood_range,
+        "reflection": reflection,
+    }
+
+    attributes_with_values_to_edit = {}
+    for attribute, input_value in input_attribute_value_dict.items():
+        value = current_attributes_dict.get(attribute)
+        if str(value) != input_value:
+            attributes_with_values_to_edit[attribute] = input_value
+
+    return attributes_with_values_to_edit

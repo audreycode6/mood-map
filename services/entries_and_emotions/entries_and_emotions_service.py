@@ -8,6 +8,8 @@ from flask import (
 )
 
 from services.entries_and_emotions.utils import (
+    current_emotions_match_emotions_string,
+    get_dict_of_attributes_and_values_to_edit,
     get_valid_page_nums,
     validate_entry,
     validate_unique_emotions,
@@ -117,33 +119,6 @@ def get_edit_entry_view(entry_id):
         return redirect(url_for("view_entries"))
 
 
-def get_dict_of_attributes_and_values_to_edit(
-    input_attribute_value_dict, entry_id, user_id
-):
-    # accept dict of current input and its values
-    # compare input with current values (dict of current attributes and their values)
-    # get current values from g.storage.get_entry(entry_id, user_id)
-    # returns id, user_id, date, energy_level, mood_range, reflection
-    session
-    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
-        entry_id, user_id
-    )
-    current_attributes_dict = {
-        "entry_date": date,
-        "energy_level": energy_level,
-        "mood_range": mood_range,
-        "reflection": reflection,
-    }
-
-    attributes_with_values_to_edit = {}
-    for attribute, input_value in input_attribute_value_dict.items():
-        value = current_attributes_dict.get(attribute)
-        if str(value) != input_value:
-            attributes_with_values_to_edit[attribute] = input_value
-
-    return attributes_with_values_to_edit
-
-
 def update_entry_and_emotions(
     entry_date, energy_level, mood_range, entry_id, reflection, emotions_string
 ):
@@ -193,7 +168,11 @@ def update_entry_and_emotions(
             elif attribute == "reflection":
                 g.storage.update_entry_reflection(attribute_value, entry_id, user_id)
 
-    if emotions_string:
+    if emotions_string and not current_emotions_match_emotions_string(
+        emotions_string, entry_id
+    ):
+        # TODO atleast check that emotions_string != current_input
+        # emotions_string -> list of emotion strings
         # Update emotions
         """
         DESIGN CHOICE: Updating emotions -> Delete and re-add all emotions anew
