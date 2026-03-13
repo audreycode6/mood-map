@@ -138,7 +138,7 @@ def get_dict_of_attributes_and_values_to_edit(
     attributes_with_values_to_edit = {}
     for attribute, input_value in input_attribute_value_dict.items():
         value = current_attributes_dict.get(attribute)
-        if value != input_value:
+        if str(value) != input_value:
             attributes_with_values_to_edit[attribute] = input_value
 
     return attributes_with_values_to_edit
