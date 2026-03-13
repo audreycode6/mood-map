@@ -14,6 +14,13 @@ from services.entries_and_emotions.utils import (
 )
 
 ENTRY_VIEW_LIMIT = 5
+ENTRY_ATTRIBUTES = [
+    "entry_date",
+    "mood_range",
+    "energy_level",
+    "reflection",
+    "emotions",
+]
 
 
 def get_entries(page_num):
@@ -93,6 +100,7 @@ def get_edit_entry_view(entry_id):
         id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
             entry_id, session["user_id"]
         )
+
         # Get all emotions associated with entry from db
         emotions_list = g.storage.get_entry_emotions(entry_id)
         return render_template(
@@ -109,11 +117,46 @@ def get_edit_entry_view(entry_id):
         return redirect(url_for("view_entries"))
 
 
+def get_dict_of_attributes_and_values_to_edit(
+    input_attribute_value_dict, entry_id, user_id
+):
+    # accept dict of current input and its values
+    # compare input with current values (dict of current attributes and their values)
+    # get current values from g.storage.get_entry(entry_id, user_id)
+    # returns id, user_id, date, energy_level, mood_range, reflection
+    session
+    id, user_id, date, energy_level, mood_range, reflection = g.storage.get_entry(
+        entry_id, user_id
+    )
+    current_attributes_dict = {
+        "entry_date": date,
+        "energy_level": energy_level,
+        "mood_range": mood_range,
+        "reflection": reflection,
+    }
+
+    attributes_with_values_to_edit = {}
+    for attribute, input_value in input_attribute_value_dict.items():
+        value = current_attributes_dict.get(attribute)
+        if value != input_value:
+            attributes_with_values_to_edit[attribute] = input_value
+
+    return attributes_with_values_to_edit
+
+
 def update_entry_and_emotions(
     entry_date, energy_level, mood_range, entry_id, reflection, emotions_string
 ):
     # Validate input
     error_list = validate_entry(entry_date, energy_level, mood_range, entry_id)
+    # TODO get dict of attributes to edit
+    input_attribute_value_dict = {
+        "entry_date": entry_date,
+        "energy_level": energy_level,
+        "mood_range": mood_range,
+        "reflection": reflection,
+    }
+
     if emotions_string:
         error_list = validate_unique_emotions(emotions_string, error_list)
 
@@ -133,10 +176,22 @@ def update_entry_and_emotions(
             422,
         )  # Redisplay page with current edits + alerts
 
-    # Update entry
-    g.storage.update_entry(
-        entry_id, entry_date, energy_level, mood_range, reflection, session["user_id"]
+    user_id = session["user_id"]
+
+    # Identify which of the entries attributes need to be edited
+    attributes_to_edit = get_dict_of_attributes_and_values_to_edit(
+        input_attribute_value_dict, entry_id, user_id
     )
+    # Update the attributes that have been edited
+    for attribute, attribute_value in attributes_to_edit.items():
+        if attribute == "entry_date":
+            g.storage.update_entry_entry_date(attribute_value, entry_id, user_id)
+        elif attribute == "mood_range":
+            g.storage.update_entry_mood_range(attribute_value, entry_id, user_id)
+        elif attribute == "energy_level":
+            g.storage.update_entry_energy_level(attribute_value, entry_id, user_id)
+        elif attribute == "reflection":
+            g.storage.update_entry_reflection(attribute_value, entry_id, user_id)
 
     if emotions_string:
         # Update emotions

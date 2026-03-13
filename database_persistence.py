@@ -168,6 +168,21 @@ class DatabasePersistence:
                 )
                 return cursor.fetchone()
 
+    def delete_entry(self, entry_id, user_id):
+        query = "DELETE FROM entries WHERE id = %s and user_id = %s"
+        logger.info(
+            f"Executing query: {query}, with entry_id: {entry_id} and user_id: {user_id}"
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    query,
+                    (
+                        entry_id,
+                        user_id,
+                    ),
+                )
+
     def update_entry(
         self, entry_id, entry_date, energy_level, mood_range, reflection, user_id
     ):
@@ -206,20 +221,59 @@ class DatabasePersistence:
                     ),
                 )
 
-    def delete_entry(self, entry_id, user_id):
-        query = "DELETE FROM entries WHERE id = %s and user_id = %s"
+    """
+    ---------------------------------------
+    Update individual entry attributes
+    ---------------------------------------
+    """
+
+    def update_entry_entry_date(self, entry_date, entry_id, user_id):
+        query = "UPDATE entries SET entry_date = %s WHERE id = %s and user_id = %s"
         logger.info(
-            f"Executing query: {query}, with entry_id: {entry_id} and user_id: {user_id}"
+            dedent(
+                f"""Executing query: {query}, with entry_date: {entry_date},
+                entry_id: {entry_id}, and user_id: {user_id}"""
+            )
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(
-                    query,
-                    (
-                        entry_id,
-                        user_id,
-                    ),
-                )
+                cursor.execute(query, (entry_date, entry_id, user_id))
+
+    def update_entry_mood_range(self, mood_range, entry_id, user_id):
+        query = "UPDATE entries SET mood_range = %s WHERE id = %s and user_id = %s"
+        logger.info(
+            dedent(
+                f"""Executing query: {query}, with mood_range: {mood_range},
+                entry_id: {entry_id}, and user_id: {user_id}"""
+            )
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (mood_range, entry_id, user_id))
+
+    def update_entry_energy_level(self, energy_level, entry_id, user_id):
+        query = "UPDATE entries SET energy_level = %s WHERE id = %s and user_id = %s"
+        logger.info(
+            dedent(
+                f"""Executing query: {query}, with energy_level: {energy_level},
+                entry_id: {entry_id}, and user_id: {user_id}"""
+            )
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (energy_level, entry_id, user_id))
+
+    def update_entry_reflection(self, reflection, entry_id, user_id):
+        query = "UPDATE entries SET reflection = %s WHERE id = %s and user_id = %s"
+        logger.info(
+            dedent(
+                f"""Executing query: {query}, with reflection: {reflection},
+                entry_id: {entry_id}, and user_id: {user_id}"""
+            )
+        )
+        with self._database_connect() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, (reflection, entry_id, user_id))
 
     """
     ----------------
