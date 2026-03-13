@@ -149,13 +149,6 @@ def update_entry_and_emotions(
 ):
     # Validate input
     error_list = validate_entry(entry_date, energy_level, mood_range, entry_id)
-    # TODO get dict of attributes to edit
-    input_attribute_value_dict = {
-        "entry_date": entry_date,
-        "energy_level": energy_level,
-        "mood_range": mood_range,
-        "reflection": reflection,
-    }
 
     if emotions_string:
         error_list = validate_unique_emotions(emotions_string, error_list)
@@ -179,19 +172,26 @@ def update_entry_and_emotions(
     user_id = session["user_id"]
 
     # Identify which of the entries attributes need to be edited
+    input_attribute_value_dict = {
+        "entry_date": entry_date,
+        "energy_level": energy_level,
+        "mood_range": mood_range,
+        "reflection": reflection,
+    }
     attributes_to_edit = get_dict_of_attributes_and_values_to_edit(
         input_attribute_value_dict, entry_id, user_id
     )
-    # Update the attributes that have been edited
-    for attribute, attribute_value in attributes_to_edit.items():
-        if attribute == "entry_date":
-            g.storage.update_entry_entry_date(attribute_value, entry_id, user_id)
-        elif attribute == "mood_range":
-            g.storage.update_entry_mood_range(attribute_value, entry_id, user_id)
-        elif attribute == "energy_level":
-            g.storage.update_entry_energy_level(attribute_value, entry_id, user_id)
-        elif attribute == "reflection":
-            g.storage.update_entry_reflection(attribute_value, entry_id, user_id)
+    if attributes_to_edit:
+        # Update the attributes that have been edited
+        for attribute, attribute_value in attributes_to_edit.items():
+            if attribute == "entry_date":
+                g.storage.update_entry_entry_date(attribute_value, entry_id, user_id)
+            elif attribute == "mood_range":
+                g.storage.update_entry_mood_range(attribute_value, entry_id, user_id)
+            elif attribute == "energy_level":
+                g.storage.update_entry_energy_level(attribute_value, entry_id, user_id)
+            elif attribute == "reflection":
+                g.storage.update_entry_reflection(attribute_value, entry_id, user_id)
 
     if emotions_string:
         # Update emotions
