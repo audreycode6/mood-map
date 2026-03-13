@@ -142,7 +142,7 @@ def delete_entry(entry_id):
     return entry_deletion(entry_id)
 
 
-@app.route("/delete_emotion/<int:entry_id>/<emotion>")
+@app.route("/delete_emotion/<int:entry_id>/<emotion>", methods=["POST"])
 @require_login
 def delete_emotion(entry_id, emotion):
     return emotion_deletion(entry_id, emotion)
