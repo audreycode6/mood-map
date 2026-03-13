@@ -171,8 +171,6 @@ def update_entry_and_emotions(
     if emotions_string and not current_emotions_match_emotions_string(
         emotions_string, entry_id
     ):
-        # TODO atleast check that emotions_string != current_input
-        # emotions_string -> list of emotion strings
         # Update emotions
         """
         DESIGN CHOICE: Updating emotions -> Delete and re-add all emotions anew
