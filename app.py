@@ -9,7 +9,7 @@ from flask import (
     session,
     url_for,
 )
-
+import os
 from services.auth.auth_service import login_user, register_user, require_login
 from services.entries_and_emotions.entries_and_emotions_service import (
     emotion_deletion,
@@ -22,7 +22,7 @@ from services.entries_and_emotions.entries_and_emotions_service import (
 )
 
 app = Flask(__name__)
-app.secret_key = "dev_secret_key"
+app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 
 
 @app.before_request
