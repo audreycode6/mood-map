@@ -1,4 +1,4 @@
-# MOOD MAP
+# Mood Map
 
 ### A Python/Flask/Jinja application backed by PostgreSQL that allows users to create and manage emotional check-ins over time, creating a personal record of mood range, energy levels, reflections, and emotions.
 
