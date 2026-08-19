@@ -25,47 +25,55 @@ _Created by: Audrey Theriault-Allaire_
 >
 > Commands should be run on command line at root of project folder
 
-1. **Unzip** the project archive and navigate into the project folder:
+1.  **Unzip** the project archive and navigate into the project folder:
 
-   ```bash
-   cd <name-of-folder-you-unzipped> # e.g. mood_map
-   ```
+    ```bash
+    cd <name-of-folder-you-unzipped> # e.g. mood_map
+    ```
 
-2. **Install dependencies** via Poetry:
+2.  **Install dependencies** via Poetry:
 
-   The following command installs all project dependencies defined in `pyproject.toml`
+    The following command installs all project dependencies defined in `pyproject.toml`
 
-   ```bash
-   poetry install
-   ```
+    ```bash
+    poetry install
+    ```
 
-3. **Create the PostgreSQL database:**
+3.  **Create the PostgreSQL database:**
 
-   ```bash
-   createdb mood_map
-   ```
+    ```bash
+    createdb mood_map
+    ```
 
-4. **Load the schema and seed data:**
+4.  **Load the schema and seed data:**
 
-   ```bash
-   psql -d mood_map < seed.sql
-   ```
+    ```bash
+    psql -d mood_map < seed.sql
+    ```
 
-5. **Run the application:**
+5.  **Run the application:**
 
-   ```bash
-   poetry run python app.py
-   ```
+    ```bash
+    poetry run python app.py
+    ```
 
-6. Open your browser and go to `http://localhost:5003/`
+    > [!NOTE]
+    > Sessions are signed with `SECRET_KEY`. If it's unset, a random key is
+    > generated at startup, so you'll be logged out whenever the server
+    > restarts. To persist sessions, set a strong key yourself:
+    >
+    >     export SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
 
-7. **Test credentials:**
-   - Username: `testuser` - Password: `pw123`
-   - data should match what is in `seed.sql`
+6.  Open your browser and go to `http://localhost:5003/`
+
+7.  **Test credentials:**
+    - Username: `testuser` - Password: `pw123`
+    - data should match what is in `seed.sql`
 
 ## Features
 
 - **CRUD entries and** their associated **emotions**
+- **per-user data isolation**: every entry and emotion operation is scoped to the authenticated user at the SQL layer, so no user can read or modify another's records
 - **chronological order** view of entries
 - **pagination**: view entries 5 at a time in order of most recent to oldest entry
 - **input validation with error handling**: alert when missing or invalid data submit for entry and emotion creation/update
