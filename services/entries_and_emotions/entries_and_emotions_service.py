@@ -122,6 +122,11 @@ def get_edit_entry_view(entry_id):
 def update_entry_and_emotions(
     entry_date, energy_level, mood_range, entry_id, reflection, emotions_string
 ):
+    # Reject entries that are not the current user's
+    if g.storage.get_entry(entry_id, session["user_id"]) is None:
+        flash(f"Unauthorized entry id: {entry_id}", "error")
+        return redirect(url_for("view_entries"))
+
     # Validate input
     error_list = validate_entry(entry_date, energy_level, mood_range, entry_id)
 
@@ -184,10 +189,13 @@ def update_entry_and_emotions(
 
 def entry_deletion(entry_id):
     entry_date = g.storage.get_entry_date(entry_id, session["user_id"])
+    if entry_date is None:
+        flash(f"Unauthorized entry id: {entry_id}", "error")
+        return redirect(url_for("view_entries"))
     # Delete entry (+ assocciated emotions) from db
     g.storage.delete_entry(entry_id, session["user_id"])
     flash(f"Successfully deleted entry from: {entry_date[0]}", "success")
-    return redirect(url_for("view_entries", page_num=session["page_num"]))
+    return redirect(url_for("view_entries", page_num=session.get("page_num", 0)))
 
 
 def emotion_deletion(entry_id, emotion):
