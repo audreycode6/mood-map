@@ -281,42 +281,51 @@ class DatabasePersistence:
     ----------------
     """
 
-    def add_emotions(self, entry_id, emotions):
-        query = "INSERT INTO emotions (entry_id, emotion) VALUES (%s, %s)"
-        logger.info(
-            f"Executing query: {query}, with entry_id: {entry_id} and emotion: {emotions}"
-        )
+    def add_emotions(self, entry_id, emotions, user_id):
+        query = """INSERT INTO emotions (entry_id, emotion)
+                    SELECT id, %s FROM entries 
+                    WHERE id = %s AND user_id = %s
+                """
+        logger.info(dedent(f"""Executing query: {query},
+                with entry_id: {entry_id}, 
+                 emotion: {emotions}, and
+                 user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 for emotion in emotions.split():
                     cursor.execute(
                         query,
-                        (
-                            entry_id,
-                            emotion,
-                        ),
+                        (emotion, entry_id, user_id),
                     )
 
-    def delete_entries_emotions(self, entry_id):
-        query = "DELETE FROM emotions WHERE entry_id = %s"
-        logger.info(f"Executing query: {query}, with entry_id: {entry_id}")
+    def delete_entries_emotions(self, entry_id, user_id):
+        query = """
+        DELETE FROM emotions 
+        WHERE entry_id IN 
+            (SELECT id FROM entries 
+            WHERE id = %s and user_id = %s
+        )"""
+        logger.info(dedent(f"""Executing query: {query},
+          with entry_id: {entry_id}
+            and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (entry_id,))
+                cursor.execute(query, (entry_id, user_id))
 
-    def delete_emotion(self, emotion_id, entry_id):
-        query = "DELETE FROM emotions WHERE id = %s and entry_id = %s"
-        logger.info(
-            f"Executing query: {query}, with emotion_id: {emotion_id} and entry_id: {entry_id}"
-        )
+    def delete_emotion(self, emotion_id, entry_id, user_id):
+        query = """DELETE FROM emotions WHERE id = %s AND entry_id IN (
+              SELECT id FROM entries
+              WHERE id = %s AND user_id = %s
+          )"""
+        logger.info(dedent(f"""Executing query: {query}, 
+            with emotion_id: {emotion_id},
+            entry_id: {entry_id} and,
+            user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
                     query,
-                    (
-                        emotion_id,
-                        entry_id,
-                    ),
+                    (emotion_id, entry_id, user_id),
                 )
 
     def get_entry_emotions(self, entry_id):
@@ -332,14 +341,20 @@ class DatabasePersistence:
             emotions_list.extend(result)
         return emotions_list
 
-    def get_emotions_id(self, emotion, entry_id):
-        query = "SELECT id FROM emotions WHERE emotion = %s and entry_id = %s"
-        logger.info(
-            f"Executing query: {query}, with emotion: {emotion} and entry_id = {entry_id}"
-        )
+    def get_emotions_id(self, emotion, entry_id, user_id):
+        query = """
+        SELECT id FROM emotions
+        WHERE emotion = %s
+          AND entry_id IN (
+              SELECT id FROM entries
+              WHERE id = %s AND user_id = %s
+          )"""
+        logger.info(dedent(f"""Executing query: {query},
+              with emotion: {emotion}, entry_id: {entry_id}
+              and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(query, (emotion, entry_id))
+                cursor.execute(query, (emotion, entry_id, user_id))
                 emotions_id = cursor.fetchone()
 
                 if emotions_id:
