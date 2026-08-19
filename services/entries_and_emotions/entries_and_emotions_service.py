@@ -70,7 +70,7 @@ def entry_creation(entry_date, energy_level, mood_range, reflection, emotions_st
     )
     # Validate / Insert emotions to db
     if emotions_string:
-        g.storage.add_emotions(entry_id[0], emotions_string)
+        g.storage.add_emotions(entry_id[0], emotions_string, user_id)
     return redirect(url_for("display_entry", entry_id=entry_id[0]))
 
 
@@ -176,8 +176,8 @@ def update_entry_and_emotions(
         DESIGN CHOICE: Updating emotions -> Delete and re-add all emotions anew
         see README for more details
         """
-        g.storage.delete_entries_emotions(entry_id)
-        g.storage.add_emotions(entry_id, emotions_string)
+        g.storage.delete_entries_emotions(entry_id, user_id)
+        g.storage.add_emotions(entry_id, emotions_string, user_id)
 
     return redirect(url_for("display_entry", entry_id=entry_id))
 
@@ -191,12 +191,13 @@ def entry_deletion(entry_id):
 
 
 def emotion_deletion(entry_id, emotion):
+    user_id = session["user_id"]
     # Get emotion's id from db
-    emotion_id = g.storage.get_emotions_id(emotion, entry_id)
+    emotion_id = g.storage.get_emotions_id(emotion, entry_id, user_id)
     if emotion_id is None:
         flash(f"Invalid emotion: {emotion}", "error")
         return redirect(url_for("display_edit_entry", entry_id=entry_id))
 
     # Delete emotion from db
-    g.storage.delete_emotion(emotion_id, entry_id)
+    g.storage.delete_emotion(emotion_id, entry_id, user_id)
     return redirect(url_for("display_entry", entry_id=entry_id))
