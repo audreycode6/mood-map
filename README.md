@@ -75,7 +75,7 @@ _Created by: Audrey Theriault-Allaire_
 
 ### Problem Domain:
 
-- **Many people experience changes in mood and energy throughout the day but do not have a structured way to record or reflect on those changes. Without a record, it can be difficult to notice patterns or understand how emotions relate to daily experiences**.
+- Many people experience changes in mood and energy throughout the day but do not have a structured way to record or reflect on those changes. Without a record, it can be difficult to notice patterns or understand how emotions relate to daily experiences.
 
 ### Target Audience:
 
