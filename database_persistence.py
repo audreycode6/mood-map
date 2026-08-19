@@ -78,22 +78,14 @@ class DatabasePersistence:
         (%s, %s, %s, %s, %s)"""
         query_2 = "SELECT id FROM entries WHERE entry_date = %s and user_id = %s"
 
-        logger.info(
-            dedent(
-                f"""
+        logger.info(dedent(f"""
             Executing query: {query}, with user_id: {user_id},
             entry_date: {entry_date}, energy_level: {energy_level},
             mood_range: {mood_range}, and reflection: {reflection}
-            """
-            )
-        )
-        logger.info(
-            dedent(
-                f"""Executing query: {query_2}, 
+            """))
+        logger.info(dedent(f"""Executing query: {query_2}, 
               with entry_date: {entry_date} 
-              and user_id: {user_id}"""
-            )
-        )
+              and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
@@ -111,12 +103,8 @@ class DatabasePersistence:
 
     def get_entry(self, entry_id, user_id):
         query = "SELECT * FROM entries WHERE id = %s and user_id = %s"
-        logger.info(
-            dedent(
-                f"""Executing query: {query}, 
-              with entry_id: {entry_id} and user_id: {user_id}"""
-            )
-        )
+        logger.info(dedent(f"""Executing query: {query}, 
+              with entry_id: {entry_id} and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (entry_id, user_id))
@@ -127,12 +115,8 @@ class DatabasePersistence:
                 WHERE user_id = %s 
                 ORDER BY entry_date 
                 DESC LIMIT %s OFFSET %s"""
-        logger.info(
-            dedent(
-                f"""Executing query: {query}, 
-            with user_id: {user_id}, limit: {page_view_limit}, offset: {page_num}"""
-            )
-        )
+        logger.info(dedent(f"""Executing query: {query}, 
+            with user_id: {user_id}, limit: {page_view_limit}, offset: {page_num}"""))
         offset_value = page_num * page_view_limit
         with self._database_connect() as conn:
             with conn.cursor(cursor_factory=DictCursor) as cursor:
@@ -151,12 +135,8 @@ class DatabasePersistence:
 
     def get_entry_date(self, entry_id, user_id):
         query = "SELECT entry_date FROM entries WHERE id = %s and user_id = %s"
-        logger.info(
-            dedent(
-                f"""Executing query: {query},
-              with entry_id: {entry_id} and user_id: {user_id}"""
-            )
-        )
+        logger.info(dedent(f"""Executing query: {query},
+              with entry_id: {entry_id} and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
@@ -195,18 +175,14 @@ class DatabasePersistence:
         reflection = %s
         WHERE id = %s
         and user_id = %s"""
-        logger.info(
-            dedent(
-                f"""Executing query: {query}, 
+        logger.info(dedent(f"""Executing query: {query}, 
               with entry_date: {entry_date}, 
               energy_level: {energy_level},
               mood_range: {mood_range}, 
               reflection: {reflection},
               entry_id: {entry_id},
               and user_id: {user_id}
-            """
-            )
-        )
+            """))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
@@ -229,24 +205,16 @@ class DatabasePersistence:
 
     def update_entry_entry_date(self, entry_date, entry_id, user_id):
         query = "UPDATE entries SET entry_date = %s WHERE id = %s and user_id = %s"
-        logger.info(
-            dedent(
-                f"""Executing query: {query}, with entry_date: {entry_date},
-                entry_id: {entry_id}, and user_id: {user_id}"""
-            )
-        )
+        logger.info(dedent(f"""Executing query: {query}, with entry_date: {entry_date},
+                entry_id: {entry_id}, and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (entry_date, entry_id, user_id))
 
     def update_entry_mood_range(self, mood_range, entry_id, user_id):
         query = "UPDATE entries SET mood_range = %s WHERE id = %s and user_id = %s"
-        logger.info(
-            dedent(
-                f"""Executing query: {query}, with mood_range: {mood_range},
-                entry_id: {entry_id}, and user_id: {user_id}"""
-            )
-        )
+        logger.info(dedent(f"""Executing query: {query}, with mood_range: {mood_range},
+                entry_id: {entry_id}, and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (mood_range, entry_id, user_id))
@@ -254,10 +222,8 @@ class DatabasePersistence:
     def update_entry_energy_level(self, energy_level, entry_id, user_id):
         query = "UPDATE entries SET energy_level = %s WHERE id = %s and user_id = %s"
         logger.info(
-            dedent(
-                f"""Executing query: {query}, with energy_level: {energy_level},
-                entry_id: {entry_id}, and user_id: {user_id}"""
-            )
+            dedent(f"""Executing query: {query}, with energy_level: {energy_level},
+                entry_id: {entry_id}, and user_id: {user_id}""")
         )
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
@@ -265,12 +231,8 @@ class DatabasePersistence:
 
     def update_entry_reflection(self, reflection, entry_id, user_id):
         query = "UPDATE entries SET reflection = %s WHERE id = %s and user_id = %s"
-        logger.info(
-            dedent(
-                f"""Executing query: {query}, with reflection: {reflection},
-                entry_id: {entry_id}, and user_id: {user_id}"""
-            )
-        )
+        logger.info(dedent(f"""Executing query: {query}, with reflection: {reflection},
+                entry_id: {entry_id}, and user_id: {user_id}"""))
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(query, (reflection, entry_id, user_id))
@@ -371,34 +333,27 @@ class DatabasePersistence:
         with self._database_connect() as conn:
             with conn.cursor() as cursor:
                 # check if "users" table exists
-                cursor.execute(
-                    """
+                cursor.execute("""
                 SELECT COUNT(*) FROM information_schema.tables
                     WHERE table_schema = 'public' AND table_name = 'users';
-                    """
-                )
+                    """)
                 if cursor.fetchone()[0] == 0:
-                    cursor.execute(
-                        """
+                    cursor.execute("""
                     CREATE TABLE users (
                         id serial PRIMARY KEY,
                         username text UNIQUE NOT NULL CHECK (LENGTH(username) <= 30),
                         password_hash text NOT NULL);
-                    """
-                    )
+                    """)
 
                 # check if "entries" table exists
-                cursor.execute(
-                    """
+                cursor.execute("""
                 SELECT COUNT(*)
                     FROM information_schema.tables
                     WHERE table_schema = 'public' AND table_name = 'entries';
-                """
-                )
+                """)
 
                 if cursor.fetchone()[0] == 0:
-                    cursor.execute(
-                        """
+                    cursor.execute("""
                     CREATE TABLE entries (
                         id serial PRIMARY KEY,
                         user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -408,25 +363,20 @@ class DatabasePersistence:
                         reflection text,
                         UNIQUE (user_id, entry_date)
                     );
-                    """
-                    )
+                    """)
 
                 # check if "emotions" table exists
-                cursor.execute(
-                    """
+                cursor.execute("""
                     SELECT COUNT(*)
                     FROM information_schema.tables
                     WHERE table_schema = 'public' AND table_name = 'emotions';
-                """
-                )
+                """)
                 if cursor.fetchone()[0] == 0:
-                    cursor.execute(
-                        """
+                    cursor.execute("""
                     CREATE TABLE emotions (
                     id serial PRIMARY KEY,
                     entry_id int NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
                     emotion text NOT NULL,
                     UNIQUE (emotion, entry_id)
                     );
-                    """
-                    )
+                    """)
